@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>面试助手 - 准备与学习</title>
+    <style>
+        /* 全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        /* 主容器 */
+        .container {
+            background-color: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        /* 标题样式 */
+        .title {
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        
+        /* 副标题 */
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: #7f8c8d;
+            line-height: 1.6;
+        }
+        
+        /* 按钮容器 */
+        .buttons-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+        }
+        
+        /* 按钮样式 */
+        .action-button {
+            padding: 20px 30px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* 面试前准备按钮 */
+        .before-interview {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .before-interview:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(79, 172, 254, 0.4);
+        }
+        
+        /* 面试后学习按钮 */
+        .after-interview {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        
+        .after-interview:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(250, 112, 154, 0.4);
+        }
+        
+        /* 按钮图标 */
+        .button-icon {
+            font-size: 1.5rem;
+        }
+        
+        /* 底部信息 */
+        .footer {
+            margin-top: 40px;
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 0.9rem;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .action-button {
+                padding: 15px 20px;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">面试助手</h1>
+        <p class="subtitle">选择您当前的面试阶段，获取专业指导和学习资源</p>
+        
+        <div class="buttons-container">
+            <button class="action-button before-interview">
+                <span class="button-icon">🎯</span>
+                <span>面试前准备</span>
+            </button>
+            
+            <button class="action-button after-interview">
+                <span class="button-icon">📚</span>
+                <span>面试后学习</span>
+            </button>
+        </div>
+        
+        <div class="footer">
+            <p>祝您面试顺利，职业发展更进一步！</p>
+        </div>
+    </div>
+
+    <script>
+        // 获取按钮元素
+        const beforeInterviewBtn = document.querySelector('.before-interview');
+        const afterInterviewBtn = document.querySelector('.after-interview');
+        
+        // 为按钮添加点击事件
+        beforeInterviewBtn.addEventListener('click', function() {
+            window.location.href = 'before_interview.html';
+        });
+        
+        afterInterviewBtn.addEventListener('click', function() {
+            window.location.href = 'after_interview.html';
+        });
+        
+        // 添加按钮动画效果
+        function addButtonAnimation(button) {
+            button.addEventListener('mousedown', function() {
+                this.style.transform = 'scale(0.95) translateY(-3px)';
+            });
+            
+            button.addEventListener('mouseup', function() {
+                this.style.transform = 'translateY(-5px)';
+            });
+            
+            button.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        }
+        
+        // 应用动画效果
+        addButtonAnimation(beforeInterviewBtn);
+        addButtonAnimation(afterInterviewBtn);
+    </script>
+</body>
+</html>

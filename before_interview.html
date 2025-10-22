@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>面试前准备 - 职位信息提交</title>
+    <style>
+        /* 全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        /* 主容器 */
+        .container {
+            background-color: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        /* 标题样式 */
+        .title {
+            font-size: 2.2rem;
+            margin-bottom: 30px;
+            color: #2c3e50;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        /* 副标题 */
+        .subtitle {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            color: #7f8c8d;
+            text-align: center;
+            line-height: 1.6;
+        }
+        
+        /* 表单样式 */
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        /* 表单项 */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        /* 标签样式 */
+        .form-label {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+        
+        /* 输入框样式 */
+        .form-input,
+        .form-textarea {
+            padding: 15px;
+            font-size: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+        
+        /* 文本域样式 */
+        .form-textarea {
+            min-height: 150px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        /* 文件上传容器 */
+        .file-upload-container {
+            border: 2px dashed #4facfe;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background-color: #f8f9fd;
+        }
+        
+        .file-upload-container:hover {
+            background-color: #f0f7ff;
+            border-color: #00f2fe;
+        }
+        
+        .file-upload-container.dragover {
+            background-color: #e6f3ff;
+            border-color: #00f2fe;
+            transform: scale(1.02);
+        }
+        
+        /* 文件上传输入 */
+        .file-upload-input {
+            display: none;
+        }
+        
+        /* 文件上传图标 */
+        .file-upload-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #4facfe;
+        }
+        
+        /* 文件上传文本 */
+        .file-upload-text {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+        
+        /* 文件上传提示 */
+        .file-upload-hint {
+            font-size: 0.9rem;
+            color: #95a5a6;
+        }
+        
+        /* 已选文件信息 */
+        .selected-file {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e8f4fc;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .file-name {
+            font-weight: 500;
+            color: #2980b9;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+        }
+        
+        .remove-file {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 1.1rem;
+            margin-left: 10px;
+        }
+        
+        /* 提交按钮容器 */
+        .submit-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        
+        /* 提交按钮 */
+        .submit-button {
+            padding: 18px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .submit-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(79, 172, 254, 0.4);
+        }
+        
+        .submit-button:active {
+            transform: translateY(-1px);
+        }
+        
+        .submit-button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* 返回按钮 */
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+            color: #2c3e50;
+        }
+        
+        .back-button:hover {
+            background: white;
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            .title {
+                font-size: 1.8rem;
+            }
+            
+            .back-button {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .file-upload-container {
+                padding: 20px;
+            }
+            
+            .file-upload-icon {
+                font-size: 2.5rem;
+            }
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .container {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .form-group {
+            animation: fadeIn 0.5s ease-out;
+            animation-fill-mode: both;
+        }
+        
+        .form-group:nth-child(1) { animation-delay: 0.1s; }
+        .form-group:nth-child(2) { animation-delay: 0.2s; }
+        .form-group:nth-child(3) { animation-delay: 0.3s; }
+        .form-group:nth-child(4) { animation-delay: 0.4s; }
+    </style>
+</head>
+<body>
+    <!-- 返回按钮 -->
+    <button class="back-button" onclick="window.location.href='interview_assistant.html'">
+        ←
+    </button>
+    
+    <div class="container">
+        <h1 class="title">面试前准备</h1>
+        <p class="subtitle">请填写以下信息，我们将为您提供针对性的面试准备建议</p>
+        
+        <form class="form-container" id="interviewForm">
+            <!-- 面试岗位输入框 -->
+            <div class="form-group">
+                <label for="jobTitle" class="form-label">面试岗位</label>
+                <input 
+                    type="text" 
+                    id="jobTitle" 
+                    class="form-input" 
+                    placeholder="例如：前端开发工程师、产品经理等"
+                    required
+                >
+            </div>
+            
+            <!-- 岗位JD输入框 -->
+            <div class="form-group">
+                <label for="jobDescription" class="form-label">岗位JD</label>
+                <textarea 
+                    id="jobDescription" 
+                    class="form-textarea" 
+                    placeholder="请粘贴完整的岗位描述，包括职责、要求等内容"
+                    required
+                ></textarea>
+            </div>
+            
+            <!-- 上传简历按钮 -->
+            <div class="form-group">
+                <label class="form-label">上传简历（可选）</label>
+                <div class="file-upload-container" id="fileUploadContainer">
+                    <input 
+                        type="file" 
+                        id="resumeUpload" 
+                        class="file-upload-input" 
+                        accept=".pdf,.doc,.docx"
+                    >
+                    <div class="file-upload-icon">📄</div>
+                    <div class="file-upload-text">点击或拖拽文件到此处上传</div>
+                    <div class="file-upload-hint">支持 PDF, Word (.doc, .docx) 文件</div>
+                    <div id="selectedFileInfo" class="selected-file" style="display: none;">
+                        <span id="fileName" class="file-name"></span>
+                        <button type="button" class="remove-file" id="removeFile">×</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 提交按钮 -->
+            <div class="submit-container">
+                <button type="submit" class="submit-button">开始准备</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const fileUploadContainer = document.getElementById('fileUploadContainer');
+        const resumeUpload = document.getElementById('resumeUpload');
+        const selectedFileInfo = document.getElementById('selectedFileInfo');
+        const fileName = document.getElementById('fileName');
+        const removeFile = document.getElementById('removeFile');
+        const interviewForm = document.getElementById('interviewForm');
+        
+        // 点击文件上传容器时触发文件选择
+        fileUploadContainer.addEventListener('click', function() {
+            resumeUpload.click();
+        });
+        
+        // 显示选中的文件
+        resumeUpload.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                fileName.textContent = this.files[0].name;
+                selectedFileInfo.style.display = 'flex';
+            }
+        });
+        
+        // 移除选中的文件
+        removeFile.addEventListener('click', function() {
+            resumeUpload.value = '';
+            selectedFileInfo.style.display = 'none';
+        });
+        
+        // 拖拽上传功能
+        fileUploadContainer.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+        
+        fileUploadContainer.addEventListener('dragleave', function() {
+            this.classList.remove('dragover');
+        });
+        
+        fileUploadContainer.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                resumeUpload.files = e.dataTransfer.files;
+                fileName.textContent = e.dataTransfer.files[0].name;
+                selectedFileInfo.style.display = 'flex';
+            }
+        });
+        
+        // 表单提交处理
+        interviewForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // 获取表单数据
+            const jobTitle = document.getElementById('jobTitle').value;
+            const jobDescription = document.getElementById('jobDescription').value;
+            const resumeFile = resumeUpload.files[0];
+            
+            // 简单的表单验证
+            if (!jobTitle.trim()) {
+                alert('请输入面试岗位');
+                return;
+            }
+            
+            if (!jobDescription.trim()) {
+                alert('请输入岗位JD');
+                return;
+            }
+            
+            // 保存到本地存储
+            localStorage.setItem('interviewJobTitle', jobTitle);
+            localStorage.setItem('interviewJobJD', jobDescription);
+            
+            // 显示提交成功消息
+            const submitMessage = document.createElement('div');
+            submitMessage.className = 'submit-message';
+            submitMessage.textContent = '信息提交成功！正在为您生成知识测评题目...';
+            this.appendChild(submitMessage);
+            
+            // 2秒后跳转到答题页面
+            setTimeout(function() {
+                // 跳转到答题页面，并传递岗位信息
+                window.location.href = `quiz_page.html?jobTitle=${encodeURIComponent(jobTitle)}`;
+            }, 2000);
+        });
+        
+        // 输入框自动保存功能
+        const jobTitleInput = document.getElementById('jobTitle');
+        const jobDescriptionInput = document.getElementById('jobDescription');
+        
+        // 页面加载时恢复保存的数据
+        function loadSavedData() {
+            const savedJobTitle = localStorage.getItem('interviewJobTitle');
+            const savedJobDescription = localStorage.getItem('interviewJobDescription');
+            
+            if (savedJobTitle) jobTitleInput.value = savedJobTitle;
+            if (savedJobDescription) jobDescriptionInput.value = savedJobDescription;
+            // 也尝试从interviewJobJD键获取（为了兼容性）
+            if (!savedJobDescription) {
+                const altSavedDescription = localStorage.getItem('interviewJobJD');
+                if (altSavedDescription) jobDescriptionInput.value = altSavedDescription;
+            }
+        }
+        
+        // 自动保存输入
+        jobTitleInput.addEventListener('input', function() {
+            localStorage.setItem('interviewJobTitle', this.value);
+        });
+        
+        jobDescriptionInput.addEventListener('input', function() {
+            localStorage.setItem('interviewJobDescription', this.value);
+        });
+        
+        // 初始化时加载保存的数据
+        loadSavedData();
+    </script>
+</body>
+</html>

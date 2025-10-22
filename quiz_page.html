@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>面试准备 - 知识测评</title>
+    <style>
+        /* 全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        /* 主容器 */
+        .container {
+            background-color: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        /* 标题样式 */
+        .title {
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        /* 副标题 */
+        .subtitle {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            color: #7f8c8d;
+            text-align: center;
+            line-height: 1.6;
+        }
+        
+        /* 岗位信息卡片 */
+        .job-info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .job-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        /* 进度条 */
+        .progress-container {
+            margin-bottom: 30px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            transition: width 0.5s ease;
+        }
+        
+        .progress-text {
+            text-align: right;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+        
+        /* 问题容器 */
+        .questions-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        /* 问题卡片 */
+        .question-card {
+            background-color: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .question-card:hover {
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 问题标题 */
+        .question-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .question-type {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .question-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        /* 选择题选项 */
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .option {
+            background-color: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .option:hover {
+            border-color: #4facfe;
+            background-color: #f0f7ff;
+        }
+        
+        .option.selected {
+            border-color: #4facfe;
+            background-color: #f0f7ff;
+        }
+        
+        .option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .option label {
+            cursor: pointer;
+            flex: 1;
+            font-size: 1rem;
+        }
+        
+        /* 问答题文本域 */
+        .essay-answer {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+        
+        .essay-answer:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+        
+        /* 按钮容器 */
+        .buttons-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            gap: 20px;
+        }
+        
+        /* 按钮样式 */
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: #2c3e50;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(250, 112, 154, 0.4);
+        }
+        
+        /* 结果页面 */
+        .results-container {
+            display: none;
+        }
+        
+        .results-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .score-display {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #4facfe;
+            margin: 20px 0;
+        }
+        
+        .score-message {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .results-details {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .result-card {
+            background-color: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            border-left: 5px solid #4facfe;
+        }
+        
+        .result-question {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .result-answer {
+            margin-bottom: 10px;
+            padding-left: 15px;
+            border-left: 2px solid #e0e0e0;
+        }
+        
+        .result-correct {
+            color: #27ae60;
+            font-weight: 500;
+        }
+        
+        .result-incorrect {
+            color: #e74c3c;
+            font-weight: 500;
+        }
+        
+        .correct-answer {
+            background-color: #e8f5e9;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            border-left: 3px solid #27ae60;
+        }
+        
+        /* 返回按钮 */
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+            color: #2c3e50;
+        }
+        
+        .back-button:hover {
+            background: white;
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            .title {
+                font-size: 1.8rem;
+            }
+            
+            .job-title {
+                font-size: 1.3rem;
+            }
+            
+            .back-button {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .buttons-container {
+                flex-direction: column;
+            }
+            
+            .score-display {
+                font-size: 2.5rem;
+            }
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .container {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .question-card {
+            animation: fadeIn 0.5s ease-out;
+            animation-fill-mode: both;
+        }
+        
+        .question-card:nth-child(1) { animation-delay: 0.1s; }
+        .question-card:nth-child(2) { animation-delay: 0.2s; }
+        .question-card:nth-child(3) { animation-delay: 0.3s; }
+        .question-card:nth-child(4) { animation-delay: 0.4s; }
+        .question-card:nth-child(5) { animation-delay: 0.5s; }
+        .question-card:nth-child(6) { animation-delay: 0.6s; }
+        .question-card:nth-child(7) { animation-delay: 0.7s; }
+        .question-card:nth-child(8) { animation-delay: 0.8s; }
+        .question-card:nth-child(9) { animation-delay: 0.9s; }
+        .question-card:nth-child(10) { animation-delay: 1.0s; }
+    </style>
+</head>
+<body>
+    <!-- 返回按钮 -->
+    <button class="back-button" onclick="window.location.href='before_interview.html'">
+        ←
+    </button>
+    
+    <div class="container">
+        <h1 class="title">面试知识测评</h1>
+        <p class="subtitle">根据您提供的岗位信息，我们为您准备了相关的知识测评题目</p>
+        
+        <!-- 岗位信息 -->
+        <div class="job-info">
+            <div class="job-title" id="displayJobTitle">前端开发工程师</div>
+            <div>针对性知识测评</div>
+        </div>
+        
+        <!-- 答题页面 -->
+        <div class="quiz-container">
+            <!-- 进度条 -->
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+                </div>
+                <div class="progress-text" id="progressText">完成进度: 0/10</div>
+            </div>
+            
+            <!-- 问题列表 -->
+            <div class="questions-container" id="questionsContainer">
+                <!-- 选择题 1 -->
+                <div class="question-card">
+                    <div class="question-header">
+                        <span class="question-type">选择题</span>
+                        <span class="question-title">1. 以下哪种JavaScript方法可以用来处理异步操作？</span>
+                    </div>
+                    <div class="options-container">
+                        <div class="option">
+                            <input type="radio" name="q1" value="A" id="q1a">
+                            <label for="q1a">A. setTimeout()</label>
+                        </div>
+                        <div class="option">
+                            <input type="radio" name="q1" value="B" id="q1b">
+                            <label for="q1b">B. Promise</label>
+                        </div>
+                        <div class="option">
+                            <input type="radio" name="q1" value="C" id="q1c">
+                            <label for="q1c">C. map()</label>
+                        </div>
+                        <div class="option">
+                            <input type="radio" name="q1" value="D" id="q1d">
+                            <label for="q1d">D. forEach()</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 选择题 2 -->
+                <div class="question-card">
+                    <div class="question-header">
+                        <span class="question-type">选择题</span>
+                        <span class="question-title">2. CSS中，以下哪个属性可以用来创建响应式布局？</span>
+                    </div>
+                    <div class="options-container">
+                        <div class="option">
+                            <input type="radio" name="q2" value="A" id="q2a">
+                            <label for="q2a">A. position: fixed</label>
+                        </div>
+                        <div class="option">
+                            <input type="radio" name="q2" value="B" id="q2b">
+                            <label for="q2b">B. display: block</label>
+                        </div>
+                        <div class="option">
+                            <input type="radio" name="q2" value="C" id="q2c">
+                            <label for="q2c">C. media queries</label>
+                        </div>
+                        <div class="option">
+                            <input type="radio" name="q2" value="D" id="q2d">
+                            <label for="q2d">D. z-index</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 选择题 3 -->
+                <div class="question-card">
+                    <div class="question-header">
+                        <span class="question-type">选择题</span>
+                        <span class="question-title">3. 在React中，以下哪个钩子函数在组件挂载后立即执行？</span>
+                    </div>
+                    <div class="options-container">
+                        <div class="option">
+                            <input type="radio" name="q3" value="A" id="q3a">
+                            <label for="q3a">A. useEffect(() => {}, [])</label>
+                        </div>
+                        <div class="option">
+                            <input type="radio" name="q3" value="B" id="q3b">
+                            <label for="q3b">B. useState()</label>
+                        </div>
+                        <div class="option">
+                            <input type="radio" name="q3" value="C" id="q3c">
+                            <label for="q3c">C. useContext()</label>
+                        </div>
+                        <div class="option">
+                            <input type="radio" name="q3" value="D" id="q3d">
+                            <label for="q3d">D. useReducer()</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 选择题 4 -->
+                <div class="question-card">
+                    <div class="question-header">
+                        <span class="question-type">选择题</span>
+                        <span class="question-title">4. 以下哪种HTTP方法用于从服务器获取资源？</span>
+                    </div>
+                    <div class="options-container">
+                        <div class="option">
+                            <input type="radio" name="q4" value="A" id="q4a">
+                            <label for="q4a">A. POST</label>
+                        </div>
+                        <div class="option">
+                            <input type="radio" name="q4" value="B" id="q4b">
+                            <label for="q4b">B. PUT</label>
+                        </div>
+                        <div class="option">
+                            <input type="radio" name="q4" value="C" id="q4c">
+                            <label for="q4c">C. GET</label>
+                        </div>
+                        <div class="option">
+                            <input type="radio" name="q4" value="D" id="q4d">
+                            <label for="q4d">D. DELETE</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 选择题 5 -->
+                <div class="question-card">
+                    <div class="question-header">
+                        <span class="question-type">选择题</span>
+                        <span class="question-title">5. 以下哪个命令可以安装npm包？</span>
+                    </div>
+                    <div class="options-container">
+                        <div class="option">
+                            <input type="radio" name="q5" value="A" id="q5a">
+                            <label for="q5a">A. npm install package-name</label>
+                        </div>
+                        <div class="option">
+                            <input type="radio" name="q5" value="B" id="q5b">
+                            <label for="q5b">B. npm add package-name</label>
+                        </div>
+                        <div class="option">
+                            <input type="radio" name="q5" value="C" id="q5c">
+                            <label for="q5c">C. npm get package-name</label>
+                        </div>
+                        <div class="option">
+                            <input type="radio" name="q5" value="D" id="q5d">
+                            <label for="q5d">D. npm fetch package-name</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 问答题 1 -->
+                <div class="question-card">
+                    <div class="question-header">
+                        <span class="question-type">问答题</span>
+                        <span class="question-title">6. 请简述JavaScript中的闭包概念及其应用场景。</span>
+                    </div>
+                    <textarea class="essay-answer" name="q6" placeholder="请在此输入您的答案..."></textarea>
+                </div>
+                
+                <!-- 问答题 2 -->
+                <div class="question-card">
+                    <div class="question-header">
+                        <span class="question-type">问答题</span>
+                        <span class="question-title">7. 请解释什么是跨域问题，以及如何解决跨域问题。</span>
+                    </div>
+                    <textarea class="essay-answer" name="q7" placeholder="请在此输入您的答案..."></textarea>
+                </div>
+                
+                <!-- 问答题 3 -->
+                <div class="question-card">
+                    <div class="question-header">
+                        <span class="question-type">问答题</span>
+                        <span class="question-title">8. 请简述React组件的生命周期，以及函数组件和类组件的生命周期差异。</span>
+                    </div>
+                    <textarea class="essay-answer" name="q8" placeholder="请在此输入您的答案..."></textarea>
+                </div>
+                
+                <!-- 问答题 4 -->
+                <div class="question-card">
+                    <div class="question-header">
+                        <span class="question-type">问答题</span>
+                        <span class="question-title">9. 请解释前端性能优化的主要方法有哪些？</span>
+                    </div>
+                    <textarea class="essay-answer" name="q9" placeholder="请在此输入您的答案..."></textarea>
+                </div>
+                
+                <!-- 问答题 5 -->
+                <div class="question-card">
+                    <div class="question-header">
+                        <span class="question-type">问答题</span>
+                        <span class="question-title">10. 请简述您对响应式设计的理解，以及实现响应式设计的主要技术。</span>
+                    </div>
+                    <textarea class="essay-answer" name="q10" placeholder="请在此输入您的答案..."></textarea>
+                </div>
+            </div>
+            
+            <!-- 按钮 -->
+                <div class="buttons-container">
+                    <button class="btn btn-primary" id="submitBtn">提交测评</button>
+                </div>
+        </div>
+        
+        <!-- 结果页面 -->
+        <div class="results-container" id="resultsContainer">
+            <div class="results-header">
+                <h2>测评完成！</h2>
+                <div class="score-display" id="scoreDisplay">0/10</div>
+                <div class="score-message" id="scoreMessage">继续努力，您还有提升空间！</div>
+            </div>
+            
+            <div class="results-details" id="resultsDetails">
+                <!-- 结果将通过JavaScript动态生成 -->
+            </div>
+            
+            <div class="buttons-container">
+                <button class="btn btn-primary" onclick="window.location.reload()">重新测评</button>
+                <button class="btn btn-secondary" onclick="window.location.href='before_interview.html'">返回准备页面</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const questionsContainer = document.getElementById('questionsContainer');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const submitBtn = document.getElementById('submitBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const scoreMessage = document.getElementById('scoreMessage');
+        const resultsDetails = document.getElementById('resultsDetails');
+        const displayJobTitle = document.getElementById('displayJobTitle');
+        
+        // 正确答案
+        const correctAnswers = {
+            q1: 'B',
+            q2: 'C',
+            q3: 'A',
+            q4: 'C',
+            q5: 'A'
+        };
+        
+        // 页面加载时从URL参数或localStorage获取岗位信息
+        function loadJobInfo() {
+            // 从URL参数获取
+            const urlParams = new URLSearchParams(window.location.search);
+            const jobTitle = urlParams.get('jobTitle');
+            
+            // 如果URL参数中没有，则从localStorage获取
+            const storedJobTitle = localStorage.getItem('interviewJobTitle');
+            
+            if (jobTitle) {
+                displayJobTitle.textContent = jobTitle;
+            } else if (storedJobTitle) {
+                displayJobTitle.textContent = storedJobTitle;
+            }
+            
+            // 尝试根据岗位信息调整题目（简化版）
+            adjustQuestionsBasedOnJobTitle(displayJobTitle.textContent);
+        }
+        
+        // 根据岗位调整题目（简化版，实际项目中可以根据不同岗位生成不同题目）
+        function adjustQuestionsBasedOnJobTitle(jobTitle) {
+            // 这里可以根据不同的岗位关键词调整题目内容
+            // 例如：如果是产品经理岗位，可以替换为产品相关题目
+            if (jobTitle.includes('产品') || jobTitle.includes('经理')) {
+                // 简单演示：修改部分题目
+                const questionTitles = document.querySelectorAll('.question-title');
+                if (questionTitles.length > 2) {
+                    questionTitles[2].textContent = '3. 在产品管理中，以下哪个阶段通常在需求分析之后？';
+                    
+                    // 相应地修改选项
+                    const options = document.querySelectorAll('.question-card:nth-child(3) .option label');
+                    if (options.length >= 4) {
+                        options[0].textContent = 'A. 产品设计';
+                        options[1].textContent = 'B. 项目启动';
+                        options[2].textContent = 'C. 产品发布';
+                        options[3].textContent = 'D. 产品下线';
+                    }
+                    
+                    // 更新正确答案
+                    correctAnswers.q3 = 'A';
+                }
+            }
+        }
+        
+        // 更新进度条
+        function updateProgress() {
+            let answeredCount = 0;
+            
+            // 检查选择题
+            for (let i = 1; i <= 5; i++) {
+                const questionName = 'q' + i;
+                const selectedOption = document.querySelector(`input[name="${questionName}"]:checked`);
+                if (selectedOption) {
+                    answeredCount++;
+                }
+            }
+            
+            // 检查问答题
+            for (let i = 6; i <= 10; i++) {
+                const questionName = 'q' + i;
+                const textarea = document.querySelector(`textarea[name="${questionName}"]`);
+                if (textarea && textarea.value.trim() !== '') {
+                    answeredCount++;
+                }
+            }
+            
+            // 更新进度条和文本
+            const progressPercentage = (answeredCount / 10) * 100;
+            progressBar.style.width = progressPercentage + '%';
+            progressText.textContent = `完成进度: ${answeredCount}/10`;
+        }
+        
+        // 保存答案
+        function saveAnswers() {
+            const answers = {};
+            
+            // 保存选择题答案
+            for (let i = 1; i <= 5; i++) {
+                const questionName = 'q' + i;
+                const selectedOption = document.querySelector(`input[name="${questionName}"]:checked`);
+                answers[questionName] = selectedOption ? selectedOption.value : '';
+            }
+            
+            // 保存问答题答案
+            for (let i = 6; i <= 10; i++) {
+                const questionName = 'q' + i;
+                const textarea = document.querySelector(`textarea[name="${questionName}"]`);
+                answers[questionName] = textarea ? textarea.value : '';
+            }
+            
+            // 保存到localStorage
+            localStorage.setItem('quizAnswers', JSON.stringify(answers));
+            
+            // 显示保存成功提示
+            alert('答案已保存！');
+        }
+        
+        // 加载保存的答案
+        function loadSavedAnswers() {
+            const savedAnswers = localStorage.getItem('quizAnswers');
+            if (savedAnswers) {
+                const answers = JSON.parse(savedAnswers);
+                
+                // 加载选择题答案
+                for (let i = 1; i <= 5; i++) {
+                    const questionName = 'q' + i;
+                    if (answers[questionName]) {
+                        const radio = document.querySelector(`input[name="${questionName}"][value="${answers[questionName]}"]`);
+                        if (radio) {
+                            radio.checked = true;
+                        }
+                    }
+                }
+                
+                // 加载问答题答案
+                for (let i = 6; i <= 10; i++) {
+                    const questionName = 'q' + i;
+                    if (answers[questionName]) {
+                        const textarea = document.querySelector(`textarea[name="${questionName}"]`);
+                        if (textarea) {
+                            textarea.value = answers[questionName];
+                        }
+                    }
+                }
+                
+                // 更新进度
+                updateProgress();
+            }
+        }
+        
+        // 提交测评
+        function submitQuiz() {
+            // 检查是否所有题目都已回答
+            let answeredCount = 0;
+            for (let i = 1; i <= 10; i++) {
+                const questionName = 'q' + i;
+                if (i <= 5) {
+                    // 选择题
+                    const selectedOption = document.querySelector(`input[name="${questionName}"]:checked`);
+                    if (selectedOption) answeredCount++;
+                } else {
+                    // 问答题
+                    const textarea = document.querySelector(`textarea[name="${questionName}"]`);
+                    if (textarea && textarea.value.trim() !== '') answeredCount++;
+                }
+            }
+            
+            if (answeredCount < 10) {
+                if (!confirm(`您还有 ${10 - answeredCount} 道题未完成，确定要提交吗？`)) {
+                    return;
+                }
+            }
+            
+            // 计算得分
+            let score = 0;
+            for (let i = 1; i <= 5; i++) {
+                const questionName = 'q' + i;
+                const selectedOption = document.querySelector(`input[name="${questionName}"]:checked`);
+                if (selectedOption && selectedOption.value === correctAnswers[questionName]) {
+                    score++;
+                }
+            }
+            
+            // 保存用户答案到localStorage
+            const answers = {};
+            for (let i = 1; i <= 10; i++) {
+                const questionName = 'q' + i;
+                if (i <= 5) {
+                    const selectedOption = document.querySelector(`input[name="${questionName}"]:checked`);
+                    answers[questionName] = selectedOption ? selectedOption.value : '';
+                } else {
+                    const textarea = document.querySelector(`textarea[name="${questionName}"]`);
+                    answers[questionName] = textarea ? textarea.value : '';
+                }
+            }
+            localStorage.setItem('quizAnswers', JSON.stringify(answers));
+            localStorage.setItem('quizScore', score.toString());
+            
+            // 跳转到结果页面
+            const jobTitle = document.getElementById('displayJobTitle').textContent;
+            window.location.href = `quiz_results.html?score=${score}&jobTitle=${encodeURIComponent(jobTitle)}`;
+        }
+        
+        // 生成结果详情
+        function generateResultsDetails(score) {
+            resultsDetails.innerHTML = '';
+            
+            // 显示选择题结果
+            for (let i = 1; i <= 5; i++) {
+                const questionName = 'q' + i;
+                const questionCard = document.querySelector(`.question-card:nth-child(${i})`);
+                const questionTitle = questionCard.querySelector('.question-title').textContent;
+                const selectedOption = document.querySelector(`input[name="${questionName}"]:checked`);
+                const isCorrect = selectedOption && selectedOption.value === correctAnswers[questionName];
+                
+                const resultCard = document.createElement('div');
+                resultCard.className = 'result-card';
+                
+                resultCard.innerHTML = `
+                    <div class="result-question">${questionTitle}</div>
+                    <div class="result-answer">
+                        <strong>您的答案：</strong>${selectedOption ? selectedOption.value : '未作答'}
+                        <span class="${isCorrect ? 'result-correct' : 'result-incorrect'}">
+                            ${isCorrect ? ' ✅ 正确' : ' ❌ 错误'}
+                        </span>
+                    </div>
+                    <div class="correct-answer">
+                        <strong>正确答案：</strong>${correctAnswers[questionName]}
+                    </div>
+                `;
+                
+                resultsDetails.appendChild(resultCard);
+            }
+            
+            // 显示问答题提交提示
+            const essayHintCard = document.createElement('div');
+            essayHintCard.className = 'result-card';
+            essayHintCard.innerHTML = `
+                <div class="result-question">问答题提交成功</div>
+                <div class="result-answer">
+                    <p>您的问答题答案已提交。这些问题需要根据面试岗位的具体要求进行评估。</p>
+                    <p>建议您回顾自己的回答，检查是否涵盖了关键知识点，以及表达是否清晰准确。</p>
+                </div>
+            `;
+            
+            resultsDetails.appendChild(essayHintCard);
+        }
+        
+        // 事件监听器
+        function setupEventListeners() {
+            // 选择题选项点击
+            const options = document.querySelectorAll('.option');
+            options.forEach(option => {
+                option.addEventListener('click', function() {
+                    // 移除同组其他选项的选中状态
+                    const radio = this.querySelector('input[type="radio"]');
+                    const name = radio.name;
+                    
+                    document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+                        r.parentElement.classList.remove('selected');
+                    });
+                    
+                    // 添加当前选项的选中状态
+                    this.classList.add('selected');
+                    updateProgress();
+                });
+            });
+            
+            // 问答题输入
+            const textareas = document.querySelectorAll('.essay-answer');
+            textareas.forEach(textarea => {
+                textarea.addEventListener('input', updateProgress);
+            });
+            
+            // 初始化时不再加载保存的答案
+            // loadSavedAnswers();
+            
+            // 移除updateProgress函数调用，因为不再需要实时更新进度
+            
+            // 提交按钮
+            submitBtn.addEventListener('click', submitQuiz);
+        }
+        
+        // 初始化
+        function init() {
+            loadJobInfo();
+            loadSavedAnswers();
+            setupEventListeners();
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
