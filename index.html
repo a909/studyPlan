@@ -121,7 +121,6 @@
         <div class="sub-message">点击按钮获取随机欢迎问候</div>
         <div class="last-updated" id="lastUpdated">最后更新: 刚刚</div>
     </div>
-    
     <script>
         // 欢迎语数组
         const welcomeMessages = [
@@ -215,6 +214,14 @@
         
         // 添加双击页面也能更换欢迎语
         document.addEventListener('dblclick', generateRandomWelcome);
+
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?fb93b240733bbdfe6a9d1a9f8589fee3";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
     </script>
 </body>
 </html>
