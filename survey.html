@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>测评页</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <script>
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?fb93b240733bbdfe6a9d1a9f8589fee3";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+  </script>
+</head>
+<body>
+  <div class="watermark" aria-hidden="true"></div>
+  <div class="container">
+    <div class="header">
+      <div class="header-title">面试助手 · 测评</div>
+      <div class="actions">
+        <a class="btn-ghost btn" href="index.html">返回首页</a>
+      </div>
+    </div>
+
+    <div class="card" id="metaCard">
+      <h2>面试信息</h2>
+      <div id="meta"></div>
+      <input id="randId" type="hidden" />
+    </div>
+
+    <form id="surveyForm" class="card">
+      <h2>题目信息</h2>
+      <div id="questions"></div>
+      <div class="footer">
+        <div class="small muted">提交后将计算得分并请求评估接口（简答题）。</div>
+        <button type="submit" class="btn">提交测评</button>
+      </div>
+      <div id="status" class="small muted" style="margin-top:10px;"></div>
+    </form>
+  </div>
+
+  <script src="assets/app.js"></script>
+  <script>
+    const metaEl = document.getElementById('meta');
+    const randInput = document.getElementById('randId');
+    const qsEl = document.getElementById('questions');
+    const form = document.getElementById('surveyForm');
+    const statusEl = document.getElementById('status');
+
+    const position = Store.load('position');
+    const salary = Store.load('salary');
+    const qdatas = Store.load('questionDatas');
+    const randId = Store.load('randId');
+
+    renderMeta();
+    renderQuestions();
+    function renderMeta() {
+      metaEl.innerHTML = `
+        <p>面试岗位：<span class="code">${position || '未知岗位'}</span></p>
+        <p>期望薪资：<span class="code">${salary || '未填写'}</span></p>
+      `;
+      randInput.value = randId || '';
+    }
+    
+    function renderQuestions() {
+      if (!qdatas || !qdatas.questions || !qdatas.questions.length) {
+        qsEl.innerHTML = '<div class="muted">暂无题目。</div>';
+        return;
+      }
+      const frag = document.createDocumentFragment();
+      qdatas.questions.forEach((q, idx) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="small muted">关键词：<span class="code">${q.keyword || '-'}</span></div>
+          <h3>${q.title || '未命名题目'} <span class="small muted">（分值：<span class="code">${q.score}</span>）</span></h3>
+          <div class="question-options">
+            <textarea class="textarea" name="q_${idx}_text" placeholder="请输入你的作答（不少于10字）" required></textarea>
+          </div>
+        `;
+        frag.appendChild(card);
+      });
+      qsEl.innerHTML = '';
+      qsEl.appendChild(frag);
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!qdatas || !qdatas.questions) return;
+
+      let totalScore = 0;
+      let obtainedScore = 0;
+      const correctKeywords = [];
+      const wrongKeywords = [];
+
+      qdatas.questions.forEach((q, idx) => {
+        totalScore += Number(q.score || 0);
+        const text = (new FormData(form)).get(`q_${idx}_text`) || '';
+        const answer = String(text).trim();
+        const max = Number(q.score || 0);
+        const s = answer.length >= 50 ? Math.round(max * 0.8) : answer.length >= 10 ? Math.round(max * 0.5) : 0;
+        obtainedScore += s;
+        if (q.keyword) {
+          if (s >= Math.round(max * 0.5)) correctKeywords.push(q.keyword);
+          else wrongKeywords.push(q.keyword);
+        }
+      });
+
+      const suggests = '建议按「概念→机制→场景」的结构组织简答，覆盖要点并结合真实案例；针对得分较低的关键词进行刻意练习与项目复盘。';
+      const recommendCourse = [
+        { name: '课程A：系统设计与答题框架', reason: '帮助你构建结构化表达能力与题目拆解套路。' },
+        { name: '课程B：并发与网络机制', reason: '强化并发、网络为重点知识的理解与应用。' }
+      ];
+
+      // 汇总并跳转结果页
+      Store.save('summary', {
+        position: position || '未知岗位',
+        totalScore,
+        obtainedScore,
+        correctKeywords,
+        wrongKeywords,
+        suggests,
+        recommendCourse
+      });
+
+      statusEl.textContent = '评估完成，正在跳转结果页…';
+      setTimeout(() => { window.location.href = 'result.html'; }, 500);
+    });
+  </script>
+</body>
+</html>

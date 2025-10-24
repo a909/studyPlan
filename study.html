@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>面试后学习</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?fb93b240733bbdfe6a9d1a9f8589fee3";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head>
+<body>
+  <div class="watermark" aria-hidden="true"></div>
+  <div class="container">
+    <div class="header">
+      <div class="header-title">面试助手 · 面试后学习</div>
+      <div class="actions">
+        <a class="btn-ghost btn" href="index.html">返回首页</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>按知识点搜索题目</h2>
+      <label for="keyword">输入知识点关键词</label>
+      <input id="keyword" class="input" placeholder="例如：算法、数据库、系统设计" />
+      <div class="footer">
+        <button id="searchBtn" class="btn">搜题</button>
+        <div class="small muted">占位功能：当前为本地示例内容展示。</div>
+      </div>
+    </div>
+
+    <div class="card" id="results">
+      <h3>搜索结果</h3>
+      <div id="list" class="grid"></div>
+    </div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('searchBtn');
+    const input = document.getElementById('keyword');
+    const list = document.getElementById('list');
+
+    const sample = [
+      { title: '二分查找的时间复杂度是？', options: ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)'] },
+      { title: '简述索引在数据库中的作用与代价。', options: [] },
+      { title: '系统设计中如何实施限流？', options: ['漏桶', '令牌桶', '熔断', '以上皆是'] },
+    ];
+
+    btn.addEventListener('click', () => {
+      const kw = (input.value || '').trim();
+      list.innerHTML = '';
+      const results = sample.filter(s => !kw || s.title.includes(kw));
+      if (!results.length) {
+        list.innerHTML = '<p class="muted">未找到相关题目，试试其他关键词。</p>';
+        return;
+      }
+      results.forEach(r => {
+        const card = document.createElement('div');
+        card.className = 'col-12 card';
+        card.innerHTML = `<h4>${r.title}</h4>${r.options.length ? `<ul>${r.options.map(o => `<li>${o}</li>`).join('')}</ul>` : '<p class="muted">简答题</p>'}`;
+        list.appendChild(card);
+      });
+    });
+  </script>
+</body>
+</html>

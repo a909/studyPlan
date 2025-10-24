@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>离线测评结果</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?fb93b240733bbdfe6a9d1a9f8589fee3";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head>
+<body class="result-page">
+  <div class="watermark" aria-hidden="true"></div>
+  <div class="container">
+    <div class="header">
+      <div class="header-title">面试助手 · 离线测评结果</div>
+      <div class="actions">
+        <a class="btn-ghost btn" href="index.html">返回首页</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>测评概览</h2>
+      <p class="subtle">离线模式：基于本地评估生成的结构化总结。</p>
+      <div class="grid">
+        <div class="col-12">
+          <p class="small muted">面试岗位</p>
+          <p id="positionEl" class="code" style="font-size:18px;"></p>
+        </div>
+        <div class="col-12">
+          <p class="small muted">得分 / 总分</p>
+          <p id="scoreText" class="code" style="font-size:18px;"></p>
+          <div class="score-bar" style="margin-top:6px;">
+            <div id="scoreFill" class="score-fill" style="width:0%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>优势与建议</h2>
+      <p class="subtle">结合你对知识点的掌握情况，给出更具行动性的反馈。</p>
+      <div id="tags"></div>
+      <div id="insights" class="callout" style="margin-top:12px;"></div>
+    </div>
+
+    <div class="card">
+      <h2>进阶学习</h2>
+      <p class="subtle">针对薄弱点提供学习路径与课程建议。</p>
+      <div id="courses"></div>
+      <div class="actions" style="margin-top:12px;">
+        <a href="study.html" class="btn">去学习页巩固知识</a>
+        <a href="prepare.html" class="btn-ghost btn">重新测评</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/app.js"></script>
+  <script>
+    const data = Store.load('summary') || {};
+    const position = data.position || '未知岗位';
+    const totalScore = Number(data.totalScore || 100);
+    const obtainedScore = Number(data.obtainedScore || Math.round(totalScore * 0.6));
+    const correctKeywords = data.correctKeywords && data.correctKeywords.length ? data.correctKeywords : ['基础语法', '系统设计'];
+    const wrongKeywords = data.wrongKeywords && data.wrongKeywords.length ? data.wrongKeywords : ['网络', '并发'];
+    const suggests = data.suggests || '离线模式：请强化答题结构（概念-机制-场景）并针对薄弱知识点进行刻意练习。';
+    let recommendCourse = data.recommendCourse || [];
+    if (!recommendCourse.length) {
+      recommendCourse = [
+        { name: '课程A：基础巩固与系统设计', reason: '系统化梳理核心知识点（语法、设计、数据结构），提供答题框架模板与高频题拆解；帮助你建立“概念—机制—场景”的表达路径，固化可复用的解题套路与结构化输出。' },
+        { name: '课程B：高并发与可靠传输', reason: '围绕并发与网络关键机制（线程模型、锁与内存可见性、TCP可靠传输、限流/熔断）进行实战演练；结合典型业务场景搭建可观测与性能优化方案，提升稳定性与性能。' }
+      ];
+    }
+
+    document.getElementById('positionEl').textContent = position;
+    document.getElementById('scoreText').textContent = `${obtainedScore} / ${totalScore}`;
+    const percent = totalScore > 0 ? Math.min(100, Math.round((obtainedScore / totalScore) * 100)) : 0;
+    document.getElementById('scoreFill').style.width = percent + '%';
+
+    const tagsEl = document.getElementById('tags');
+    const cTitle = document.createElement('p'); cTitle.className = 'small'; cTitle.textContent = '已掌握';
+    const wTitle = document.createElement('p'); wTitle.className = 'small'; wTitle.style.marginTop = '12px'; wTitle.textContent = '需提升';
+    if (correctKeywords.length) {
+      tagsEl.appendChild(cTitle);
+      correctKeywords.forEach(k => {
+        const el = document.createElement('span'); el.className = 'tag tag-green'; el.textContent = k; tagsEl.appendChild(el);
+      });
+    }
+    if (wrongKeywords.length) {
+      tagsEl.appendChild(wTitle);
+      wrongKeywords.forEach(k => {
+        const el = document.createElement('span'); el.className = 'tag tag-red'; el.textContent = k; tagsEl.appendChild(el);
+      });
+    }
+
+    function buildStrengthText(cks, percent) {
+      const rank = percent >= 85 ? '表现出色' : percent >= 70 ? '稳健可靠' : percent >= 50 ? '基础扎实' : '基础待加强';
+      const tops = cks.slice(0, 2);
+      const focus = tops.length ? `你在【${tops.join('、')}】方面的理解较为到位` : '你展现出清晰的思考与持续学习的态度';
+      const scenario = tops.length ? '在真实面试环节中，这能帮助你更快地拆解问题、定位关键点，并给出有说服力的方案。' : '这将成为你稳步提升的底层驱动力。';
+      return `整体${rank}。${focus}，体现出良好的知识建构与问题拆解能力。${scenario}`;
+    }
+
+    function buildImproveText(wks) {
+      if (!wks.length) return '短板不明显。建议保持练习节奏，结合过往项目沉淀可复用的解决方案。';
+      const tops = wks.slice(0, 2);
+      const focus = `短板集中在【${tops.join('、')}】等环节`;
+      const path = '建议按「概念框架 → 典型题目 → 场景化实践」三步走：先梳理关键术语与原理，再针对易错点刷题强化，最后结合真实业务或开源项目做落地演练。';
+      return `${focus}。${path}`;
+    }
+
+    const insightsEl = document.getElementById('insights');
+    const strength = buildStrengthText(correctKeywords, percent);
+    const improve = buildImproveText(wrongKeywords);
+    insightsEl.innerHTML = `
+      <p>${strength}</p>
+      <p>${improve}</p>
+      <hr class="sep" />
+      <p>${suggests}</p>
+    `;
+
+    const coursesEl = document.getElementById('courses');
+    const ul = document.createElement('ul'); ul.className = 'list-clean';
+    recommendCourse.forEach(c => {
+      const li = document.createElement('li');
+      const name = c.name || '课程';
+      const reason = c.reason || '推荐理由：提升相关薄弱环节。';
+      li.innerHTML = `<strong>${name}</strong><br /><span class="small muted">${reason}</span>`;
+      ul.appendChild(li);
+    });
+    coursesEl.appendChild(ul);
+  </script>
+</body>
+</html>

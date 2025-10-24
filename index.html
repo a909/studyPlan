@@ -1,229 +1,55 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <title>随机欢迎语</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        
-        .welcome-container {
-            background: white;
-            border-radius: 16px;
-            padding: 40px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            max-width: 600px;
-            width: 100%;
-            transition: transform 0.3s ease;
-        }
-        
-        .welcome-container:hover {
-            transform: translateY(-5px);
-        }
-        
-        .welcome-icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            animation: float 3s ease-in-out infinite;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        .welcome-message {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 30px;
-            transition: all 0.5s ease;
-            min-height: 80px;
-        }
-        
-        .change-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 30px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .change-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-        }
-        
-        .change-btn:active {
-            transform: scale(0.95);
-        }
-        
-        .sub-message {
-            margin-top: 20px;
-            color: #7f8c8d;
-            font-size: 14px;
-        }
-        
-        .last-updated {
-            margin-top: 30px;
-            color: #95a5a6;
-            font-size: 12px;
-        }
-        
-        @media (max-width: 768px) {
-            .welcome-container {
-                padding: 30px 20px;
-            }
-            
-            .welcome-message {
-                font-size: 2rem;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .welcome-message {
-                font-size: 1.8rem;
-            }
-            
-            .welcome-icon {
-                font-size: 3rem;
-            }
-        }
-    </style>
-<script>
-var _hmt = _hmt || [];
-(function() {
-  var hm = document.createElement("script");
-  hm.src = "https://hm.baidu.com/hm.js?fb93b240733bbdfe6a9d1a9f8589fee3";
-  var s = document.getElementsByTagName("script")[0];
-  s.parentNode.insertBefore(hm, s);
-})();
-</script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>面试助手 - 首页</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <script>
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?fb93b240733bbdfe6a9d1a9f8589fee3";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+  </script>
 </head>
 <body>
-    <div class="welcome-container">
-        <div class="welcome-icon">🎉</div>
-        <div class="welcome-message" id="welcomeText">欢迎来到我们的网站！</div>
-        <button class="change-btn" id="changeButton">换一句欢迎语</button>
-        <div class="sub-message">点击按钮获取随机欢迎问候</div>
-        <div class="last-updated" id="lastUpdated">最后更新: 刚刚</div>
+  <div class="watermark" aria-hidden="true"></div>
+  <div class="container">
+    <div class="header">
+      <div class="header-title">面试助手 · Interview Assistant</div>
+      <div class="actions"></div>
     </div>
-    <script>
-        // 欢迎语数组
-        const welcomeMessages = [
-            "欢迎来到我们的网站！",
-            "你好！很高兴见到你！",
-            "欢迎光临，请随意浏览！",
-            "嗨，朋友！今天过得怎么样？",
-            "热烈欢迎！希望你有个愉快的体验！",
-            "欢迎回来！我们一直在等你！",
-            "你好呀！感谢你的访问！",
-            "欢迎加入我们的社区！",
-            "嗨！准备好探索了吗？",
-            "很高兴认识你！享受你的时光！",
-            "欢迎来到这个精彩的世界！",
-            "你好啊！期待与你互动！",
-            "热烈欢迎，尊贵的访客！",
-            "嗨，亲爱的朋友！你来了真好！",
-            "欢迎，这里有很多惊喜等着你！",
-            "你好！希望今天对你来说是美好的一天！",
-            "欢迎大驾光临！",
-            "嗨，你好啊！有什么可以帮助你的吗？",
-            "欢迎，感谢你的到来！",
-            "你好！很高兴能为你服务！"
-        ];
-        
-        // 表情符号数组
-        const emojis = ["🎉", "🌟", "💫", "✨", "🎊", "💐", "🎈", "🌈", "🦋", "🌸"];
-        
-        // 获取DOM元素
-        const welcomeText = document.getElementById('welcomeText');
-        const changeButton = document.getElementById('changeButton');
-        const lastUpdated = document.getElementById('lastUpdated');
-        const welcomeIcon = document.querySelector('.welcome-icon');
-        
-        // 随机生成欢迎语函数
-        function generateRandomWelcome() {
-            // 随机选择欢迎语
-            const randomMessage = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
-            
-            // 随机选择表情符号
-            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-            
-            // 更新欢迎语和表情
-            welcomeText.textContent = randomMessage;
-            welcomeIcon.textContent = randomEmoji;
-            
-            // 更新最后更新时间
-            const now = new Date();
-            lastUpdated.textContent = `最后更新: ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
-            
-            // 添加文字动画效果
-            welcomeText.style.opacity = '0.5';
-            setTimeout(() => {
-                welcomeText.style.opacity = '1';
-            }, 300);
-            
-            // 添加图标缩放效果
-            welcomeIcon.style.transform = 'scale(1.2)';
-            setTimeout(() => {
-                welcomeIcon.style.transform = 'scale(1)';
-            }, 300);
-        }
-        
-        // 添加按钮点击事件
-        changeButton.addEventListener('click', generateRandomWelcome);
-        
-        // 页面加载时随机生成欢迎语
-        window.addEventListener('DOMContentLoaded', () => {
-            // 添加页面加载动画
-            welcomeText.style.opacity = '0';
-            welcomeIcon.style.opacity = '0';
-            
-            setTimeout(() => {
-                welcomeText.style.transition = 'opacity 1s ease';
-                welcomeIcon.style.transition = 'opacity 1s ease';
-                welcomeText.style.opacity = '1';
-                welcomeIcon.style.opacity = '1';
-                
-                // 延迟一秒后随机生成欢迎语
-                setTimeout(generateRandomWelcome, 1000);
-            }, 100);
-        });
-        
-        // 添加键盘回车和空格事件
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                generateRandomWelcome();
-            }
-        });
-        
-        // 添加双击页面也能更换欢迎语1
-        document.addEventListener('dblclick', generateRandomWelcome);
-    </script>
+
+    <section class="hero card">
+      <h1 class="title-gradient">AI 智能面试系统</h1>
+      <p>以智能为核心的全流程支持：题库生成、离线评估、结构化建议与课程推荐。</p>
+      <div class="actions"></div>
+    </section>
+
+    <div class="card">
+      <h2>系统特性</h2>
+      <p class="muted">体现智能与科技感的交互体验。</p>
+      <hr class="sep" />
+      <ul class="list-clean">
+        <li>AI题库：根据岗位与JD自动生成覆盖关键知识点的题目。</li>
+        <li>离线评估：本地计算得分与建议，无后端依赖。</li>
+        <li>结构化建议：优势/短板标签+可执行提升路径。</li>
+        <li>进阶学习：针对薄弱点的课程推荐与学习指引。</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>开始使用</h2>
+      <p class="muted">选择你的流程入口并开始测评或学习。</p>
+      <div class="actions" style="margin-top:8px;">
+        <a class="btn" href="prepare.html">面试前准备</a>
+        <a class="btn-ghost btn" href="survey_offline.html">离线测评</a>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

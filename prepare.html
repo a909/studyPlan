@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>面试前准备</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <script>
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?fb93b240733bbdfe6a9d1a9f8589fee3";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+  </script>
+</head>
+<body>
+  <div class="watermark" aria-hidden="true"></div>
+  <div class="container">
+    <div class="header">
+      <div class="header-title">面试助手 · 面试前准备</div>
+      <div class="actions">
+        <a class="btn-ghost btn" href="index.html">返回首页</a>
+      </div>
+    </div>
+
+    <form id="prepareForm" class="card">
+      <h2>填写面试信息</h2>
+      <div class="grid">
+        <div class="col-12">
+          <label for="resumeFile">上传简历（必填）</label>
+          <input id="resumeFile" name="resumeFile" class="file-input" type="file" accept=".pdf,.doc,.docx,.txt" required />
+          <div class="small">该文件不会上传，仅用于本地预览与占位。</div>
+        </div>
+        <div class="col-12">
+          <label for="position">面试岗位（必填）</label>
+          <input id="position" name="position" class="input" placeholder="例如：后端开发工程师" required />
+        </div>
+        <div class="col-12">
+          <label for="salary">期望薪资（￥）（必填）</label>
+          <input id="salary" name="salary" class="input" type="number" min="0" step="100" placeholder="例如：20000" required />
+        </div>
+        <div class="col-12">
+          <label for="jd">岗位 JD（选填）</label>
+          <textarea id="jd" name="jd" class="textarea" placeholder="复制粘贴岗位职责与要求"></textarea>
+        </div>
+        <div class="col-12">
+          <label for="company">面试公司（选填）</label>
+          <input id="company" name="company" class="input" placeholder="例如：高顿教育" />
+        </div>
+      </div>
+      <div class="footer">
+        <div class="small muted">点击后将请求后端生成测评题目（10秒超时）</div>
+        <div class="actions">
+          <button type="submit" class="btn">准备面试</button>
+          <button type="button" id="offlineBtn" class="btn-ghost btn">离线面试</button>
+        </div>
+      </div>
+      <div id="status" class="small muted" style="margin-top:10px;"></div>
+    </form>
+
+  </div>
+
+  <script src="assets/app.js"></script>
+  <script>
+    const form = document.getElementById('prepareForm');
+    const statusEl = document.getElementById('status');
+    const offlineBtn = document.getElementById('offlineBtn');
+
+    function detectCategory(pos) {
+      const p = (pos || '').toLowerCase();
+      if (p.includes('php')) return 'php';
+      if (p.includes('java')) return 'java';
+      if ((pos || '').includes('星探')) return '星探';
+      if ((pos || '').includes('经纪')) return '经纪人';
+      if ((pos || '').includes('销售')) return '销售';
+      return 'java';
+    }
+
+    offlineBtn.addEventListener('click', () => {
+      const resumeFileEl = document.getElementById('resumeFile');
+      if (!resumeFileEl.files || resumeFileEl.files.length === 0) {
+        statusEl.textContent = '请先上传简历（必填）';
+        return;
+      }
+      let position = (document.getElementById('position').value || '').trim();
+      let jd = (document.getElementById('jd').value || '').trim();
+      let company = (document.getElementById('company')?.value || '').trim();
+      let salary = (document.getElementById('salary').value || '').trim();
+
+      statusEl.textContent = '离线模式：准备跳转…';
+
+      // 离线模式不强制后端依赖，缺失字段用默认值
+      if (!position) position = '通用岗位';
+      if (!salary) salary = '未填写';
+
+      // 兼容 Store/Q 未加载的情况
+      const S = (window.Store && typeof window.Store.save === 'function')
+        ? window.Store
+        : { save: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+
+      let randId = 'OFF-' + Math.random().toString(36).slice(2, 10);
+      let qdatas = null;
+      try {
+        const category = detectCategory(position);
+        if (window.Q && typeof window.Q.makeOfflineSet === 'function') {
+          const offline = window.Q.makeOfflineSet(category, position, jd, salary);
+          randId = offline.randId || randId;
+          qdatas = offline.questionDatas || null;
+        }
+      } catch (e) {}
+
+      // 如果无法使用 Q.makeOfflineSet，则使用兜底问答题库（5题）
+      if (!qdatas) {
+        qdatas = {
+          keywords: ['通用'],
+          questions: [
+            { keyword: '通用', type: 'qa', id: 'OFF-QA-001', score: 20, title: '请概述你过往项目中一次最具挑战的问题解决过程。', options: [], correctAnswer: '' },
+            { keyword: '通用', type: 'qa', id: 'OFF-QA-002', score: 20, title: '结合本岗位，说明你认为的核心技能与关键指标。', options: [], correctAnswer: '' },
+            { keyword: '通用', type: 'qa', id: 'OFF-QA-003', score: 20, title: '举例说明一次性能优化或可用性提升的实践。', options: [], correctAnswer: '' },
+            { keyword: '通用', type: 'qa', id: 'OFF-QA-004', score: 20, title: '针对岗位难点，谈谈你的应对策略与取舍。', options: [], correctAnswer: '' },
+            { keyword: '通用', type: 'qa', id: 'OFF-QA-005', score: 20, title: '谈谈你对团队协作与技术成长的理解。', options: [], correctAnswer: '' }
+          ]
+        };
+      }
+
+      S.save('position', position);
+      S.save('jd', jd);
+      S.save('company', company);
+      S.save('salary', salary);
+      S.save('randId', randId);
+      S.save('questionDatas', qdatas);
+
+      statusEl.textContent = '离线模式：已生成默认问答题库，正在跳转…';
+      window.location.href = 'survey_offline.html';
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const position = document.getElementById('position').value.trim();
+      const jd = document.getElementById('jd').value.trim();
+      const company = document.getElementById('company').value.trim();
+      const salary = document.getElementById('salary').value.trim();
+
+      if (!position || !salary) {
+        statusEl.textContent = '请完整填写岗位与期望薪资。';
+        return;
+      }
+
+      Store.save('position', position);
+      Store.save('jd', jd);
+      Store.save('company', company);
+      Store.save('salary', salary);
+
+      statusEl.textContent = '正在请求后端生成题目…';
+
+      let randId = null;
+      let qdatas = null;
+
+      // 尝试请求后端接口（10秒超时）
+      const { ok, json, error } = await API.postJSON('acceptUserData', { jd, position, salary, company }, 10000);
+      if (ok && json && json.status === 1 && json.result) {
+        randId = json.result.randId || null;
+        qdatas = Q.parseQuestionDatas(json.result.questionDatas);
+      }
+
+      // 如果接口失败或数据格式不正确，走兜底
+      if (!qdatas) {
+        const fallback = Q.makeFallback(position, jd);
+        randId = fallback.randId;
+        qdatas = fallback.questionDatas;
+        statusEl.textContent = '接口不可用或超时，已生成问答占位题库。';
+      } else {
+        statusEl.textContent = '已获取题目数据，正在跳转测评页…';
+      }
+
+      // 记录数据到本地存储，供测评页使用
+      Store.save('randId', randId || ('F-' + Math.random().toString(36).slice(2, 10)));
+      Store.save('questionDatas', qdatas);
+
+      // 跳转至测评页
+      setTimeout(() => { window.location.href = 'survey.html'; }, 500);
+    });
+  </script>
+</body>
+</html>
