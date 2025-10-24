@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>面授后学习 - 搜索</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+  <link rel="stylesheet" href="assets/ai-backdrop.css" />
+  <script src="assets/ai-backdrop.js"></script>
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+</head>
+<body class="page-light">
+  <div class="watermark" aria-hidden="true"></div>
+  <div class="container">
+    <div class="site-header">
+      <div class="brand">
+        <div class="brand-name-gradient">智面未来</div>
+        <div class="brand-sub">题目搜索</div>
+      </div>
+      <div class="header-actions">
+        <a href="index.html" class="btn-sm btn-ghost btn">返回首页</a>
+      </div>
+      <hr class="site-sep" />
+    </div>
+
+    <section class="card">
+      <h2>面授后学习 - 题目搜索</h2>
+      <p class="muted">输入关键词，查询相关题目与解析。</p>
+      <hr class="sep" />
+      <div class="actions" style="gap:8px; align-items:center;">
+        <input id="kwInput" class="input" type="text" placeholder="请输入关键词" style="flex:1; min-width:260px;" />
+        <button id="kwBtn" class="btn">搜索</button>
+      </div>
+      <div id="statusEl" class="muted" style="margin-top:8px;"></div>
+      <div id="resultWrap" style="margin-top:16px; display:none;">
+        <h3 id="resTitle" class="title-gradient" style="margin:0 0 8px 0;"></h3>
+        <div id="resAnalysis" class="card" style="padding:12px;"></div>
+      </div>
+    </section>
+  </div>
+
+  <script src="assets/app.js"></script>
+  <script>
+    const inputEl = document.getElementById('kwInput');
+    const btnEl = document.getElementById('kwBtn');
+    const statusEl = document.getElementById('statusEl');
+    const wrapEl = document.getElementById('resultWrap');
+    const titleEl = document.getElementById('resTitle');
+    const analysisEl = document.getElementById('resAnalysis');
+
+    btnEl.addEventListener('click', async () => {
+      const keywords = (inputEl.value || '').trim();
+      if (!keywords) {
+        statusEl.textContent = '请输入关键词后再搜索。';
+        wrapEl.style.display = 'none';
+        return;
+      }
+      statusEl.textContent = '正在搜索题目…';
+      wrapEl.style.display = 'none';
+      try {
+        const resp = await API.postJSON('acceptUserQuestion', { keywords }, 180000);
+        if (resp && resp.ok && resp.json) {
+          const j = resp.json;
+          const ok = (j && (j.status === 1 || j.status === '1'));
+          const r = j && j.result;
+          if (ok && r) {
+            titleEl.textContent = r.title || '题目';
+            analysisEl.textContent = r.analysis || '暂无解析';
+            wrapEl.style.display = 'block';
+            statusEl.textContent = '搜索完成。';
+          } else {
+            statusEl.textContent = '未找到相关题目，请更换关键词。';
+          }
+        } else {
+          statusEl.textContent = '搜索失败，请稍后重试。';
+        }
+      } catch (e) {
+        statusEl.textContent = '网络异常：' + e.message;
+      }
+    });
+
+    // 回车触发搜索
+    inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { btnEl.click(); }
+    });
+  </script>
+  <script>AIBackdrop?.init?.({ mount: 'body', fov: 26, speed: 0.3 });</script>
+</body>
+</html>

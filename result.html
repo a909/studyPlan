@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>测评结果</title>
   <link rel="stylesheet" href="assets/styles.css" />
+  <link rel="stylesheet" href="assets/ai-backdrop.css" />
+  <script src="assets/ai-backdrop.js"></script>
   <meta name="referrer" content="strict-origin-when-cross-origin">
 <script>
 var _hmt = _hmt || [];
@@ -16,14 +18,18 @@ var _hmt = _hmt || [];
 })();
 </script>
 </head>
-<body class="result-page">
+<body class="result-page page-light">
   <div class="watermark" aria-hidden="true"></div>
   <div class="container">
-    <div class="header">
-      <div class="header-title">面试助手 · 测评结果</div>
-      <div class="actions">
-        <a class="btn-ghost btn" href="index.html">返回首页</a>
+    <div class="site-header">
+      <div class="brand">
+        <div class="brand-name-gradient">智面未来</div>
+        <div class="brand-sub">测评结果</div>
       </div>
+      <div class="header-actions">
+        <a class="btn-sm btn-ghost btn" href="index.html">返回首页</a>
+      </div>
+      <hr class="site-sep" />
     </div>
 
     <!-- 概览：集中呈现岗位与得分，不再分裂 -->
@@ -36,11 +42,12 @@ var _hmt = _hmt || [];
           <p id="positionEl" class="code" style="font-size:18px;"></p>
         </div>
         <div class="col-12">
-          <p class="small muted">得分 / 总分</p>
+          <p class="small muted">预测通过率</p>
           <p id="scoreText" class="code" style="font-size:18px;"></p>
-          <div class="score-bar" style="margin-top:6px;">
-            <div id="scoreFill" class="score-fill" style="width:0%;"></div>
-          </div>
+            <div class="score-bar" style="margin-top:6px;">
+              <div id="scoreFill" class="score-fill" style="width:0%;"></div>
+            </div>
+            <p id="rateTip" class="small muted" style="margin-top:6px;"></p>
         </div>
       </div>
     </div>
@@ -78,9 +85,24 @@ var _hmt = _hmt || [];
 
     // 概览
     document.getElementById('positionEl').textContent = position;
-    document.getElementById('scoreText').textContent = `${obtainedScore} / ${totalScore}`;
-    const percent = totalScore > 0 ? Math.min(100, Math.round((obtainedScore / totalScore) * 100)) : 0;
+    const rawRate = totalScore > 0 ? Math.floor((obtainedScore / totalScore) * 100) : 0;
+    const passRate = Math.min(99, Math.max(50, rawRate));
+    document.getElementById('scoreText').textContent = `${passRate}%`;
+    const percent = passRate;
     document.getElementById('scoreFill').style.width = percent + '%';
+    // 通过率鼓励文案（纯鼓励语，不给建议）
+    let tip = '';
+    if (passRate >= 85) {
+      tip = '状态极佳！保持自信与热情，继续闪耀。';
+    } else if (passRate >= 70) {
+      tip = '表现稳健！把握节奏，沉着应对，前途可期。';
+    } else if (passRate >= 60) {
+      tip = '势头不错！坚持练习，保持信心，你能行。';
+    } else {
+      tip = '踏实向前！相信自己，每一步都在进步。';
+    }
+    const rateTipEl = document.getElementById('rateTip');
+    if (rateTipEl) rateTipEl.textContent = tip;
 
     // 标签：合并到优势与建议卡片内，避免分裂
     const tagsEl = document.getElementById('tags');
@@ -143,5 +165,6 @@ var _hmt = _hmt || [];
       coursesEl.appendChild(ul);
     }
   </script>
+  <script>AIBackdrop?.init?.({ mount: 'body', fov: 26, speed: 0.3 });</script>
 </body>
 </html>

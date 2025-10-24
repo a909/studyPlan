@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>面试后学习</title>
   <link rel="stylesheet" href="assets/styles.css" />
+  <link rel="stylesheet" href="assets/ai-backdrop.css" />
+  <script src="assets/ai-backdrop.js"></script>
   <meta name="referrer" content="strict-origin-when-cross-origin">
 <script>
 var _hmt = _hmt || [];
@@ -19,11 +21,15 @@ var _hmt = _hmt || [];
 <body>
   <div class="watermark" aria-hidden="true"></div>
   <div class="container">
-    <div class="header">
-      <div class="header-title">面试助手 · 面试后学习</div>
-      <div class="actions">
-        <a class="btn-ghost btn" href="index.html">返回首页</a>
+    <div class="site-header">
+      <div class="brand">
+        <div class="brand-name-gradient">智面未来</div>
+        <div class="brand-sub">面试后学习</div>
       </div>
+      <div class="header-actions">
+        <a class="btn-sm btn-ghost btn" href="index.html">返回首页</a>
+      </div>
+      <hr class="site-sep" />
     </div>
 
     <div class="card">
@@ -69,5 +75,6 @@ var _hmt = _hmt || [];
       });
     });
   </script>
+  <script>AIBackdrop?.init?.({ mount: 'body', fov: 26, speed: 0.3 });</script>
 </body>
 </html>

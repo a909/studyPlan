@@ -3,27 +3,46 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>面试前准备</title>
+  <title>智面未来</title>
   <link rel="stylesheet" href="assets/styles.css" />
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <script>
   var _hmt = _hmt || [];
   (function() {
-    var hm = document.createElement("script");
-    hm.src = "https://hm.baidu.com/hm.js?fb93b240733bbdfe6a9d1a9f8589fee3";
-    var s = document.getElementsByTagName("script")[0];
-    s.parentNode.insertBefore(hm, s);
+    function inject() {
+      try {
+        var hm = document.createElement("script");
+        hm.async = true; hm.defer = true;
+        hm.src = "https://hm.baidu.com/hm.js?fb93b240733bbdfe6a9d1a9f8589fee3";
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+      } catch (e) {}
+    }
+    if (window.requestIdleCallback) {
+      requestIdleCallback(inject, { timeout: 3000 });
+    } else {
+      window.addEventListener('load', function () { setTimeout(inject, 1200); }, { once: true });
+    }
   })();
   </script>
+  <!-- 移除准备页自定义背景，统一使用 AI 背景资源 -->
+  <link rel="stylesheet" href="assets/ai-backdrop.css" />
+  <script src="assets/ai-backdrop.js"></script>
+  <!-- 统一使用全局样式变量（移除页面内联覆盖） -->
+  <!-- 延迟加载pdf.js与mammoth：在用户选择文件时按需加载，避免阻塞首屏渲染 -->
 </head>
-<body>
+<body class="page-light">
   <div class="watermark" aria-hidden="true"></div>
   <div class="container">
-    <div class="header">
-      <div class="header-title">面试助手 · 面试前准备</div>
-      <div class="actions">
-        <a class="btn-ghost btn" href="index.html">返回首页</a>
+    <div class="site-header">
+      <div class="brand">
+        <div class="brand-name-gradient">智面未来</div>
+        <div class="brand-sub">面试前准备</div>
       </div>
+      <div class="header-actions">
+        <a class="btn-sm btn-ghost btn" href="index.html">返回首页</a>
+      </div>
+      <hr class="site-sep" />
     </div>
 
     <form id="prepareForm" class="card">
@@ -33,6 +52,8 @@
           <label for="resumeFile">上传简历（必填）</label>
           <input id="resumeFile" name="resumeFile" class="file-input" type="file" accept=".pdf,.doc,.docx,.txt" required />
           <div class="small">该文件不会上传，仅用于本地预览与占位。</div>
+          <div id="resumePreview" class="small muted" style="margin-top:6px;"></div>
+          <div id="resumeKeywordsView" class="small muted" style="margin-top:4px;"></div>
         </div>
         <div class="col-12">
           <label for="position">面试岗位（必填）</label>
@@ -40,7 +61,7 @@
         </div>
         <div class="col-12">
           <label for="salary">期望薪资（￥）（必填）</label>
-          <input id="salary" name="salary" class="input" type="number" min="0" step="100" placeholder="例如：20000" required />
+          <input id="salary" name="salary" class="input" type="number" min="0" step="1" placeholder="例如：20000" required />
         </div>
         <div class="col-12">
           <label for="jd">岗位 JD（选填）</label>
@@ -55,11 +76,25 @@
         <div class="small muted">点击后将请求后端生成测评题目（10秒超时）</div>
         <div class="actions">
           <button type="submit" class="btn">准备面试</button>
-          <button type="button" id="offlineBtn" class="btn-ghost btn">离线面试</button>
+          <button type="button" id="offlineBtn" class="btn-ghost btn" style="display:none;">离线面试</button>
         </div>
       </div>
       <div id="status" class="small muted" style="margin-top:10px;"></div>
     </form>
+
+    <!-- 等候小游戏遮罩（统一站点样式） -->
+    <div id="waitGameOverlay" class="wait-overlay">
+      <div class="card wait-game-card">
+        <div class="wait-game-header">
+          <div class="wait-game-title">等候小游戏</div>
+          <div class="small muted wait-game-tip">玩法：方向键/WASD 控制蛇，吃红色方块加分；可穿越屏幕边缘。</div>
+        </div>
+        <canvas id="waitGameCanvas" class="wait-game-canvas" width="340" height="260"></canvas>
+        <div id="waitGameScore" class="small wait-game-score">得分：0</div>
+        <div id="waitGameTip" class="small muted wait-game-tip">玩法：方向键/WASD 控制蛇，吃红色方块加分；可穿越屏幕边缘。</div>
+        <div id="waitGameConfirm" class="small wait-game-bar" style="display:none;"></div>
+      </div>
+    </div>
 
   </div>
 
@@ -76,11 +111,382 @@
       if ((pos || '').includes('星探')) return '星探';
       if ((pos || '').includes('经纪')) return '经纪人';
       if ((pos || '').includes('销售')) return '销售';
-      return 'java';
+      // 结合简历关键词辅助判断
+      const kws = Store.load('resumeKeywords') || [];
+      if (kws.includes('java')) return 'java';
+      if (kws.includes('python')) return 'java';
+      if (kws.includes('go')) return 'java';
+    }
+
+    async function ensurePDFJS() {
+      if (typeof pdfjsLib !== 'undefined' && pdfjsLib && typeof pdfjsLib.getDocument === 'function') return;
+      await new Promise(function(resolve){
+        try {
+          var s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+          s.async = true; s.defer = true;
+          s.onload = function(){
+            try {
+              if (typeof pdfjsLib !== 'undefined') {
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+              }
+            } catch(e) {}
+            resolve();
+          };
+          s.onerror = function(){ resolve(); };
+          document.head.appendChild(s);
+        } catch(e) { resolve(); }
+      });
+    }
+    async function ensureMammoth() {
+      if (typeof mammoth !== 'undefined' && mammoth && typeof mammoth.extractRawText === 'function') return;
+      await new Promise(function(resolve){
+        try {
+          var s = document.createElement('script');
+          s.src = 'https://unpkg.com/mammoth/mammoth.browser.min.js';
+          s.async = true; s.defer = true;
+          s.onload = function(){ resolve(); };
+          s.onerror = function(){ resolve(); };
+          document.head.appendChild(s);
+        } catch(e) { resolve(); }
+      });
+    }
+    async function extractTextFromPDFBuffer(buf) {
+      try {
+        await ensurePDFJS();
+        if (typeof pdfjsLib === 'undefined' || !pdfjsLib || typeof pdfjsLib.getDocument !== 'function') return '';
+        const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+        let out = [];
+        for (let p = 1; p <= pdf.numPages && (out.join('\n').length < 100000); p++) {
+          const page = await pdf.getPage(p);
+          const content = await page.getTextContent();
+          const strings = content.items.map(it => it.str).filter(Boolean);
+          out.push(strings.join(' '));
+        }
+        let text = out.join('\n');
+        text = text.replace(/-\n/g, '')
+                   .replace(/[ \t]+/g, ' ')
+                   .replace(/\s*\n\s*/g, '\n')
+                   .trim();
+        return text;
+      } catch (e) { return ''; }
+    }
+    async function extractTextFromDocBuffer(buf) {
+      try {
+        await ensureMammoth();
+        if (typeof mammoth !== 'undefined' && mammoth && typeof mammoth.extractRawText === 'function') {
+          const res = await mammoth.extractRawText({ arrayBuffer: buf });
+          let text = (res && res.value) ? res.value : '';
+          text = text.replace(/[ \t]+/g, ' ')
+                     .replace(/\s*\n\s*/g, '\n')
+                     .trim();
+          return text.slice(0, 100000);
+        }
+        return '';
+      } catch { return ''; }
+    }
+    async function bufferToDataURL(buf, mime) {
+      return await new Promise(resolve => {
+        try {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result || '');
+          reader.onerror = () => resolve('');
+          reader.readAsDataURL(new Blob([buf], { type: mime || 'application/octet-stream' }));
+        } catch { resolve(''); }
+      });
+    }
+
+    // 等候小游戏：点击掉落表情得分，避开炸弹（支持高清动物图像精灵）
+    let WG = { running: false, items: [], score: 0, raf: 0, spawnTimer: 0, imagesPreloaded: false, goodImgs: [], badImgs: [] };
+
+    const WAIT_GAME_IMAGE_PATHS_GOOD = [
+      'https://cdn.pixabay.com/photo/2015/03/26/09/54/dog-690157_1280.jpg',
+      'https://cdn.pixabay.com/photo/2015/11/16/16/28/cat-1046544_1280.jpg',
+      'https://cdn.pixabay.com/photo/2018/01/20/21/56/fox-3098709_1280.jpg',
+      'https://cdn.pixabay.com/photo/2016/03/27/19/40/rabbit-1280.jpg',
+      'https://cdn.pixabay.com/photo/2016/12/13/14/19/panda-1909503_1280.jpg',
+      'https://cdn.pixabay.com/photo/2013/10/10/14/51/owl-1932684_1280.jpg'
+    ];
+    const WAIT_GAME_IMAGE_PATHS_BAD = [
+      'https://cdn.pixabay.com/photo/2017/09/07/09/22/snake-2723139_1280.jpg',
+      'https://cdn.pixabay.com/photo/2019/06/10/13/36/scorpion-4264774_1280.jpg'
+    ];
+
+    function preloadWaitGameImages() {
+      if (WG.imagesPreloaded) return;
+      WG.goodImgs = []; WG.badImgs = [];
+      const loadList = (paths, target) => {
+        paths.forEach(url => {
+          if (!url) return;
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => { target.push(img); };
+          img.onerror = () => {};
+          img.src = url;
+        });
+      };
+      const goodUrls = (Store.load('waitGameGoodImages') || WAIT_GAME_IMAGE_PATHS_GOOD);
+      const badUrls = (Store.load('waitGameBadImages') || WAIT_GAME_IMAGE_PATHS_BAD);
+      loadList(goodUrls, WG.goodImgs);
+      loadList(badUrls, WG.badImgs);
+      WG.imagesPreloaded = true;
+    }
+
+    function showWaitGame() {
+      const overlay = document.getElementById('waitGameOverlay');
+      const canvas = document.getElementById('waitGameCanvas');
+      const scoreEl = document.getElementById('waitGameScore');
+      overlay.style.display = 'flex';
+      WG.running = true; WG.items = []; WG.score = 0; scoreEl.textContent = '得分：0';
+      
+      // 画布与高分屏适配
+      const cssW = 340, cssH = 260;
+      canvas.style.width = cssW + 'px';
+      canvas.style.height = cssH + 'px';
+      const dpr = Math.max(1, Math.round(window.devicePixelRatio || 1));
+      canvas.width = Math.round(cssW * dpr);
+      canvas.height = Math.round(cssH * dpr);
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      
+      // 贪吃蛇状态
+      const cell = 16;
+      const cols = Math.floor(cssW / cell);
+      const rows = Math.floor(cssH / cell);
+      WG.grid = { cell, cols, rows };
+      const startX = Math.floor(cols / 3);
+      const startY = Math.floor(rows / 2);
+      WG.snake = [{ x: startX, y: startY }];
+      WG.dir = { x: 1, y: 0 };
+      WG.nextDir = { x: 1, y: 0 };
+      WG.speedMs = 220; // 初始速度（更慢更易上手）
+      WG.minSpeedMs = 180; // 最低速度上限
+      // 食物生成函数（被误删，补回）
+      function spawnFood() {
+        let fx, fy, safe = 0;
+        do {
+          fx = Math.floor(Math.random() * cols);
+          fy = Math.floor(Math.random() * rows);
+          safe++;
+          if (safe > 100) break;
+        } while (WG.snake.some(seg => seg.x === fx && seg.y === fy));
+        return { x: fx, y: fy };
+      }
+      WG.food = spawnFood();
+      
+      function resetSnake() {
+        WG.snake = [{ x: startX, y: startY }];
+        WG.dir = { x: 1, y: 0 };
+        WG.nextDir = { x: 1, y: 0 };
+        WG.food = spawnFood();
+        WG.speedMs = 120;
+      }
+      
+      function step() {
+        // 更新方向（防止直接反向）
+        const nd = WG.nextDir;
+        if (nd.x + WG.dir.x !== 0 || nd.y + WG.dir.y !== 0) {
+          WG.dir = nd;
+        }
+        const head = WG.snake[0];
+        let nx = head.x + WG.dir.x;
+        let ny = head.y + WG.dir.y;
+        // 边缘穿越（降低难度）：从另一侧出现
+        nx = (nx + cols) % cols;
+        ny = (ny + rows) % rows;
+        // 撞到自身则重置（保留基本挑战）
+        if (WG.snake.some(seg => seg.x === nx && seg.y === ny)) {
+          resetSnake();
+          return;
+        }
+        // 前进
+        WG.snake.unshift({ x: nx, y: ny });
+        // 吃到食物
+        if (nx === WG.food.x && ny === WG.food.y) {
+          WG.score += 1;
+          scoreEl.textContent = '得分：' + WG.score;
+          WG.food = spawnFood();
+          // 逐步加速，但速度不低于最小值
+          WG.speedMs = Math.max(WG.minSpeedMs, WG.speedMs - 7);
+        } else {
+          // 未吃到则尾部前进
+          WG.snake.pop();
+        }
+      }
+      
+      function draw() {
+        ctx.fillStyle = '#202225';
+        ctx.fillRect(0, 0, cssW, cssH);
+        // 画食物
+        ctx.fillStyle = '#f23d3d';
+        ctx.fillRect(WG.food.x * cell, WG.food.y * cell, cell, cell);
+        // 画蛇
+        ctx.fillStyle = '#39c5bb';
+        WG.snake.forEach(seg => {
+          ctx.fillRect(seg.x * cell, seg.y * cell, cell, cell);
+        });
+      }
+      
+      let lastTick = performance.now();
+      function tick(ts) {
+        if (!WG.running) return;
+        if (ts - lastTick >= WG.speedMs) {
+          step();
+          lastTick = ts;
+        }
+        draw();
+        WG.raf = requestAnimationFrame(tick);
+      }
+      
+      // 键盘控制：方向键/WASD（拦截默认滚动，避免“没响应”）
+      WG.keyHandler = function (ev) {
+        const k = ev.key.toLowerCase();
+        if (k === 'arrowup' || k === 'w') { WG.nextDir = { x: 0, y: -1 }; ev.preventDefault && ev.preventDefault(); }
+        else if (k === 'arrowdown' || k === 's') { WG.nextDir = { x: 0, y: 1 }; ev.preventDefault && ev.preventDefault(); }
+        else if (k === 'arrowleft' || k === 'a') { WG.nextDir = { x: -1, y: 0 }; ev.preventDefault && ev.preventDefault(); }
+        else if (k === 'arrowright' || k === 'd') { WG.nextDir = { x: 1, y: 0 }; ev.preventDefault && ev.preventDefault(); }
+      };
+      try { document.addEventListener('keydown', WG.keyHandler, { passive: false }); } catch {}
+      
+      // 启动循环
+      lastTick = performance.now();
+      WG.raf = requestAnimationFrame(tick);
+    }
+    function hideWaitGame() {
+      const overlay = document.getElementById('waitGameOverlay');
+      overlay.style.display = 'none';
+      WG.running = false;
+      try { cancelAnimationFrame(WG.raf); } catch {}
+      try { clearInterval(WG.spawnTimer); } catch {}
+      try { if (WG.keyHandler) { document.removeEventListener('keydown', WG.keyHandler); WG.keyHandler = null; } } catch {}
+      const confirmEl = document.getElementById('waitGameConfirm');
+      if (confirmEl) { confirmEl.style.display = 'none'; confirmEl.innerHTML = ''; }
+    }
+
+    function showWaitEndPrompt(qdatas, randId) {
+      const overlay = document.getElementById('waitGameOverlay');
+      if (!overlay) return;
+      // 确保遮罩可见
+      overlay.style.display = 'flex';
+      const card = overlay.querySelector('.card') || overlay;
+      let bar = document.getElementById('waitGameConfirm');
+      if (!bar) {
+        bar = document.createElement('div');
+        bar.id = 'waitGameConfirm';
+        bar.className = 'small';
+        bar.style.padding = '8px 12px';
+        bar.style.borderTop = '1px solid #333';
+        bar.style.background = '#151515';
+        card.appendChild(bar);
+      } else if (!card.contains(bar)) {
+        try { card.appendChild(bar); } catch {}
+      }
+      bar.style.display = 'block';
+      bar.innerHTML = '<div style="margin-bottom:6px;">已获取题目数据，是否继续小游戏？可随时结束并跳转测评。</div>' +
+        '<div class="actions" style="gap:8px; display:flex; justify-content:center;">' +
+        '<button type="button" id="wgEndBtn" class="btn">结束并跳转</button>' +
+        '<button type="button" id="wgContinueBtn" class="btn-ghost btn">继续玩</button>' +
+        '</div>';
+      const endBtn = document.getElementById('wgEndBtn');
+      const contBtn = document.getElementById('wgContinueBtn');
+      endBtn.onclick = () => {
+        Store.save('randId', randId || ('F-' + Math.random().toString(36).slice(2, 10)));
+        Store.save('questions', qdatas || questionsArr);
+        try { Store.save('mode', 'online'); } catch {}
+        hideWaitGame();
+        statusEl.textContent = '已获取题目数据，正在跳转测评页…';
+        setTimeout(() => { window.location.href = 'survey.html'; }, 300);
+      };
+      contBtn.onclick = () => {
+        statusEl.textContent = '已获取题目数据，你可继续小游戏，随时点击「结束并跳转」。';
+      };
+    }
+
+    function showWaitErrorPrompt(message) {
+      const overlay = document.getElementById('waitGameOverlay');
+      const card = overlay.querySelector('.card');
+      let bar = document.getElementById('waitGameConfirm');
+      if (!bar) {
+        bar = document.createElement('div');
+        bar.id = 'waitGameConfirm';
+        bar.className = 'small';
+        bar.style.padding = '8px 12px';
+        bar.style.borderTop = '1px solid #333';
+        bar.style.background = '#151515';
+        card.appendChild(bar);
+      }
+      bar.style.display = 'block';
+      bar.innerHTML = `<div style="margin-bottom:6px;">${message}</div>` +
+        '<div class="actions" style="gap:8px; display:flex; justify-content:center;">' +
+        '<button type="button" id="wgCloseBtn" class="btn">结束小游戏</button>' +
+        '<button type="button" id="wgContinueBtn2" class="btn-ghost btn">继续玩</button>' +
+        '</div>';
+      const closeBtn = document.getElementById('wgCloseBtn');
+      const contBtn2 = document.getElementById('wgContinueBtn2');
+      closeBtn.onclick = () => {
+        hideWaitGame();
+      };
+      contBtn2.onclick = () => {
+        statusEl.textContent = '你可继续小游戏，随时点击「结束小游戏」。';
+      };
+    }
+
+    function hideWaitErrorPrompt() {
+      const bar = document.getElementById('waitGameConfirm');
+      if (bar) { bar.style.display = 'none'; bar.innerHTML = ''; }
     }
 
     offlineBtn.addEventListener('click', () => {
       const resumeFileEl = document.getElementById('resumeFile');
+      const resumePreviewEl = document.getElementById('resumePreview');
+      const resumeKeywordsViewEl = document.getElementById('resumeKeywordsView');
+      const jdEl = document.getElementById('jd');
+
+      resumeFileEl.addEventListener('change', async () => {
+        const f = resumeFileEl.files && resumeFileEl.files[0];
+        if (!f) {
+          resumePreviewEl.textContent = '未选择文件';
+          try { Store.save('resumeContent', null); Store.save('resumeKeywords', []); } catch {}
+          resumeKeywordsViewEl.textContent = '';
+          return;
+        }
+        const ext = (f.name.split('.').pop() || '').toLowerCase();
+        const meta = `已选择文件：${f.name}（${Math.round(f.size / 1024)} KB）`;
+        try {
+          let text = '';
+          if (ext === 'txt') {
+            text = await f.text();
+          } else if (ext === 'pdf') {
+            const buf = await f.arrayBuffer();
+            text = await extractTextFromPDFBuffer(buf);
+          } else if (ext === 'doc' || ext === 'docx') {
+            const buf = await f.arrayBuffer();
+            text = await extractTextFromDocBuffer(buf);
+          }
+          const preview = (text || '').slice(0, 600);
+          if (text) {
+            resumePreviewEl.textContent = meta + '\n内容预览（离线解析）：\n' + preview + (text.length > 600 ? '…' : '');
+            Store.save('resumeContent', { name: f.name, size: f.size, type: f.type, text });
+            const kws = extractKeywordsFromText(text);
+            Store.save('resumeKeywords', kws);
+            resumeKeywordsViewEl.textContent = kws.length ? ('关键词：' + kws.join('、')) : '未提取到关键词';
+            if (!jdEl.value) { jdEl.value = (text || '').slice(0, 800); }
+          } else {
+            resumePreviewEl.textContent = meta + '\n该文件解析失败或不支持内容提取（建议上传 .txt / 简单文本 PDF）。';
+            Store.save('resumeContent', { name: f.name, size: f.size, type: f.type });
+            Store.save('resumeKeywords', []);
+            resumeKeywordsViewEl.textContent = '';
+          }
+        } catch (e) {
+          resumePreviewEl.textContent = meta + '\n当前类型预览失败。';
+          Store.save('resumeContent', { name: f.name, size: f.size, type: f.type });
+          Store.save('resumeKeywords', []);
+          resumeKeywordsViewEl.textContent = '';
+        }
+      });
       if (!resumeFileEl.files || resumeFileEl.files.length === 0) {
         statusEl.textContent = '请先上传简历（必填）';
         return;
@@ -134,7 +540,8 @@
       S.save('questionDatas', qdatas);
 
       statusEl.textContent = '离线模式：已生成默认问答题库，正在跳转…';
-      window.location.href = 'survey_offline.html';
+      try { Store.save('mode', 'offline'); } catch {}
+      window.location.href = 'survey.html';
     });
 
     form.addEventListener('submit', async (e) => {
@@ -155,34 +562,188 @@
       Store.save('salary', salary);
 
       statusEl.textContent = '正在请求后端生成题目…';
-
+      showWaitGame();
       let randId = null;
-      let qdatas = null;
-
-      // 尝试请求后端接口（10秒超时）
-      const { ok, json, error } = await API.postJSON('acceptUserData', { jd, position, salary, company }, 10000);
-      if (ok && json && json.status === 1 && json.result) {
-        randId = json.result.randId || null;
-        qdatas = Q.parseQuestionDatas(json.result.questionDatas);
+      let questionsArr = null;
+      try {
+        const resumeFileEl = document.getElementById('resumeFile');
+        const f = resumeFileEl && resumeFileEl.files && resumeFileEl.files[0];
+        let jl = '';
+        const jl_kws = Store.load('resumeKeywords') || [];
+        let jl_name = '';
+        if (f) {
+          const ext = (f.name.split('.').pop() || '').toLowerCase();
+          jl_name = f.name;
+          if (ext === 'txt') {
+            jl = await f.text();
+            if (!jl) { const buf = await f.arrayBuffer(); jl = await bufferToDataURL(buf, f.type); }
+          } else if (ext === 'pdf') {
+            const buf = await f.arrayBuffer();
+            const txt = await extractTextFromPDFBuffer(buf);
+            jl = (txt && txt.trim()) ? txt : await bufferToDataURL(buf, f.type);
+          } else if (ext === 'doc' || ext === 'docx') {
+            const buf = await f.arrayBuffer();
+            const txt = await extractTextFromDocBuffer(buf);
+            jl = (txt && txt.trim()) ? txt : await bufferToDataURL(buf, f.type);
+          } else {
+            // 其它类型尽量按文本读取；若不可读则回退为 DataURL（文件内容的 base64）
+            jl = await f.text();
+            if (!jl) { const buf = await f.arrayBuffer(); jl = await bufferToDataURL(buf, f.type); }
+          }
+        }
+        let ok, json, error;
+        ({ ok, json, error } = await API.postJSON('acceptUserData', { jd, jl, jl_kws, jl_name, position, salary, company }, 180000));
+        try { localStorage.setItem('last_api_response', JSON.stringify({ ok, json, error })); } catch {}
+        if (ok && json) {
+          randId = json?.result?.randId || null;
+          const rawQ = (json?.result?.questions || json?.data?.questions || json?.questions);
+          // questions 是 JSON 格式：转为数组后直接使用
+          let arr = null;
+          // 优先兼容嵌套结构：result.questions.questions
+          if (json?.result?.questions && Array.isArray(json.result.questions.questions)) {
+            arr = json.result.questions.questions; questionsArr = Array.isArray(arr) ? arr : questionsArr;
+          } else if (Array.isArray(rawQ)) {
+            arr = rawQ; questionsArr = Array.isArray(arr) ? arr : questionsArr;
+          } else if (typeof rawQ === 'string') {
+            try {
+              const qs = (typeof decodeEscaped === 'function') ? decodeEscaped(rawQ) : rawQ;
+              const parsed = JSON.parse(qs);
+              if (Array.isArray(parsed)) arr = parsed;
+              else if (parsed && Array.isArray(parsed.questions)) arr = parsed.questions;
+            } catch (err) {
+              // 异常情况下：不提示错误，使用默认题库并按正常流程跳转
+              let fallbackArr = null;
+              let fallbackRand = 'F-' + Math.random().toString(36).slice(2, 10);
+              try {
+                const category = detectCategory(position);
+                if (window.Q && typeof window.Q.makeOfflineSet === 'function') {
+                  const offline = window.Q.makeOfflineSet(category, position, jd, salary);
+                  fallbackRand = offline.randId || fallbackRand;
+                  const qd = offline.questionDatas || null;
+                  if (qd && Array.isArray(qd.questions)) {
+                    fallbackArr = qd.questions;
+                  }
+                }
+              } catch {}
+              if (!Array.isArray(fallbackArr) || !fallbackArr.length) {
+                fallbackArr = [
+                  { keyword: '通用', type: 'qa', id: 'OFF-QA-001', score: 20, title: '请概述你过往项目中一次最具挑战的问题解决过程。', options: [], correctAnswer: '' },
+                  { keyword: '通用', type: 'qa', id: 'OFF-QA-002', score: 20, title: '结合本岗位，说明你认为的核心技能与关键指标。', options: [], correctAnswer: '' },
+                  { keyword: '通用', type: 'qa', id: 'OFF-QA-003', score: 20, title: '举例说明一次性能优化或可用性提升的实践。', options: [], correctAnswer: '' },
+                  { keyword: '通用', type: 'qa', id: 'OFF-QA-004', score: 20, title: '针对岗位难点，谈谈你的应对策略与取舍。', options: [], correctAnswer: '' },
+                  { keyword: '通用', type: 'qa', id: 'OFF-QA-005', score: 20, title: '谈谈你对团队协作与技术成长的理解。', options: [], correctAnswer: '' }
+                ];
+              }
+              questionsArr = fallbackArr;
+              randId = fallbackRand;
+              statusEl.textContent = '已获取题目数据，还可继续小游戏，随时点击「结束并跳转」。';
+              showWaitEndPrompt(questionsArr, randId);
+              return;
+            }
+            // 成功解析为数组：赋值供后续提示使用
+            if (Array.isArray(arr) && arr.length) { questionsArr = arr; }
+            if (!Array.isArray(questionsArr) || !questionsArr.length) {
+              // 接口不可用或返回异常：不提示错误，按正常流程使用默认题库
+              let fallbackArr = null;
+              let fallbackRand = 'F-' + Math.random().toString(36).slice(2, 10);
+              try {
+                const category = detectCategory(position);
+                if (window.Q && typeof window.Q.makeOfflineSet === 'function') {
+                  const offline = window.Q.makeOfflineSet(category, position, jd, salary);
+                  fallbackRand = offline.randId || fallbackRand;
+                  const qd = offline.questionDatas || null;
+                  if (qd && Array.isArray(qd.questions)) {
+                    fallbackArr = qd.questions;
+                  }
+                }
+              } catch {}
+              if (!Array.isArray(fallbackArr) || !fallbackArr.length) {
+                fallbackArr = [
+                  { keyword: '通用', type: 'qa', id: 'OFF-QA-001', score: 20, title: '请概述你过往项目中一次最具挑战的问题解决过程。', options: [], correctAnswer: '' },
+                  { keyword: '通用', type: 'qa', id: 'OFF-QA-002', score: 20, title: '结合本岗位，说明你认为的核心技能与关键指标。', options: [], correctAnswer: '' },
+                  { keyword: '通用', type: 'qa', id: 'OFF-QA-003', score: 20, title: '举例说明一次性能优化或可用性提升的实践。', options: [], correctAnswer: '' },
+                  { keyword: '通用', type: 'qa', id: 'OFF-QA-004', score: 20, title: '针对岗位难点，谈谈你的应对策略与取舍。', options: [], correctAnswer: '' },
+{ keyword: '通用', type: 'qa', id: 'OFF-QA-005', score: 20, title: '谈谈你对团队协作与技术成长的理解。', options: [], correctAnswer: '' }
+                ];
+              }
+              questionsArr = fallbackArr;
+              randId = fallbackRand;
+              statusEl.textContent = '已获取题目数据，还可继续小游戏，随时点击「结束并跳转」。';
+              showWaitEndPrompt(questionsArr, randId);
+              // 不 return，允许继续交互
+            }
+            if (!Array.isArray(questionsArr) || !questionsArr.length) {
+              // 接口不可用或返回异常：不提示错误，按正常流程使用默认题库
+              let fallbackArr = null;
+              let fallbackRand = 'F-' + Math.random().toString(36).slice(2, 10);
+              try {
+                const category = detectCategory(position);
+                if (window.Q && typeof window.Q.makeOfflineSet === 'function') {
+                  const offline = window.Q.makeOfflineSet(category, position, jd, salary);
+                  fallbackRand = offline.randId || fallbackRand;
+                  const qd = offline.questionDatas || null;
+                  if (qd && Array.isArray(qd.questions)) {
+                    fallbackArr = qd.questions;
+                  }
+                }
+              } catch {}
+              if (!Array.isArray(fallbackArr) || !fallbackArr.length) {
+                fallbackArr = [
+                  { keyword: '通用', type: 'qa', id: 'OFF-QA-001', score: 20, title: '请概述你过往项目中一次最具挑战的问题解决过程。', options: [], correctAnswer: '' },
+                  { keyword: '通用', type: 'qa', id: 'OFF-QA-002', score: 20, title: '结合本岗位，说明你认为的核心技能与关键指标。', options: [], correctAnswer: '' },
+                  { keyword: '通用', type: 'qa', id: 'OFF-QA-003', score: 20, title: '举例说明一次性能优化或可用性提升的实践。', options: [], correctAnswer: '' },
+                  { keyword: '通用', type: 'qa', id: 'OFF-QA-004', score: 20, title: '针对岗位难点，谈谈你的应对策略与取舍。', options: [], correctAnswer: '' },
+{ keyword: '通用', type: 'qa', id: 'OFF-QA-005', score: 20, title: '谈谈你对团队协作与技术成长的理解。', options: [], correctAnswer: '' }
+                ];
+              }
+              questionsArr = fallbackArr;
+              randId = fallbackRand;
+              statusEl.textContent = '已获取题目数据，还可继续小游戏，随时点击「结束并跳转」。';
+              showWaitEndPrompt(questionsArr, randId);
+            }
+          }
+        }
+      } catch (err) {
+        // 异常情况下：不提示错误，使用默认题库并按正常提示
+        let fallbackArr = null;
+        let fallbackRand = 'F-' + Math.random().toString(36).slice(2, 10);
+        try {
+          const category = detectCategory(position);
+          if (window.Q && typeof window.Q.makeOfflineSet === 'function') {
+            const offline = window.Q.makeOfflineSet(category, position, jd, salary);
+            fallbackRand = offline.randId || fallbackRand;
+            const qd = offline.questionDatas || null;
+            if (qd && Array.isArray(qd.questions)) {
+              fallbackArr = qd.questions;
+            }
+          }
+        } catch {}
+        if (!Array.isArray(fallbackArr) || !fallbackArr.length) {
+          fallbackArr = [
+            { keyword: '通用', type: 'qa', id: 'OFF-QA-001', score: 20, title: '请概述你过往项目中一次最具挑战的问题解决过程。', options: [], correctAnswer: '' },
+            { keyword: '通用', type: 'qa', id: 'OFF-QA-002', score: 20, title: '结合本岗位，说明你认为的核心技能与关键指标。', options: [], correctAnswer: '' },
+            { keyword: '通用', type: 'qa', id: 'OFF-QA-003', score: 20, title: '举例说明一次性能优化或可用性提升的实践。', options: [], correctAnswer: '' },
+            { keyword: '通用', type: 'qa', id: 'OFF-QA-004', score: 20, title: '针对岗位难点，谈谈你的应对策略与取舍。', options: [], correctAnswer: '' },
+{ keyword: '通用', type: 'qa', id: 'OFF-QA-005', score: 20, title: '谈谈你对团队协作与技术成长的理解。', options: [], correctAnswer: '' }
+          ];
+        }
+        questionsArr = fallbackArr;
+        randId = fallbackRand;
+        statusEl.textContent = '已获取题目数据，还可继续小游戏，随时点击「结束并跳转」。';
+        showWaitEndPrompt(questionsArr, randId);
       }
 
-      // 如果接口失败或数据格式不正确，走兜底
-      if (!qdatas) {
-        const fallback = Q.makeFallback(position, jd);
-        randId = fallback.randId;
-        qdatas = fallback.questionDatas;
-        statusEl.textContent = '接口不可用或超时，已生成问答占位题库。';
+      if (!Array.isArray(questionsArr) || !questionsArr.length) {
+        // 移除旧的错误提示分支，统一走默认题库的正常提示
+        // statusEl.textContent = '接口不可用或返回异常，请使用「离线面试」获取本地题库。';
+        // showWaitErrorPrompt('接口返回异常，是否结束小游戏？');
+        // return;
       } else {
-        statusEl.textContent = '已获取题目数据，正在跳转测评页…';
+        statusEl.textContent = '已获取题目数据，还可继续小游戏，随时点击「结束并跳转」。';
+        showWaitEndPrompt(questionsArr, randId);
       }
-
-      // 记录数据到本地存储，供测评页使用
-      Store.save('randId', randId || ('F-' + Math.random().toString(36).slice(2, 10)));
-      Store.save('questionDatas', qdatas);
-
-      // 跳转至测评页
-      setTimeout(() => { window.location.href = 'survey.html'; }, 500);
     });
   </script>
+<script>AIBackdrop?.init?.({ mount: 'body', fov: 26, speed: 0.3 });</script>
 </body>
 </html>

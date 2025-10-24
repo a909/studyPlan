@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>测评页</title>
   <link rel="stylesheet" href="assets/styles.css" />
+  <link rel="stylesheet" href="assets/ai-backdrop.css" />
+  <script src="assets/ai-backdrop.js"></script>
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <script>
   var _hmt = _hmt || [];
@@ -16,14 +18,18 @@
   })();
   </script>
 </head>
-<body>
+<body class="page-light">
   <div class="watermark" aria-hidden="true"></div>
   <div class="container">
-    <div class="header">
-      <div class="header-title">面试助手 · 测评</div>
-      <div class="actions">
-        <a class="btn-ghost btn" href="index.html">返回首页</a>
+    <div class="site-header">
+      <div class="brand">
+        <div class="brand-name-gradient">智面未来</div>
+        <div class="brand-sub">在线测评</div>
       </div>
+      <div class="header-actions">
+        <a class="btn-sm btn-ghost btn" href="index.html">返回首页</a>
+      </div>
+      <hr class="site-sep" />
     </div>
 
     <div class="card" id="metaCard">
@@ -41,6 +47,20 @@
       </div>
       <div id="status" class="small muted" style="margin-top:10px;"></div>
     </form>
+
+    <!-- 等候小游戏遮罩（统一站点样式） -->
+    <div id="waitGameOverlay" class="wait-overlay">
+      <div class="card wait-game-card">
+        <div class="wait-game-header">
+          <div class="wait-game-title">等候小游戏</div>
+          <div class="small muted wait-game-tip">玩法：方向键/WASD 控制蛇，吃红色方块加分；可穿越屏幕边缘。</div>
+        </div>
+        <canvas id="waitGameCanvas" class="wait-game-canvas" width="340" height="260"></canvas>
+        <div id="waitGameScore" class="small wait-game-score">得分：0</div>
+        <div id="waitGameTip" class="small muted wait-game-tip">玩法：方向键/WASD 控制蛇，吃红色方块加分；可穿越屏幕边缘。</div>
+        <div id="waitGameConfirm" class="small wait-game-bar" style="display:none;"></div>
+      </div>
+    </div>
   </div>
 
   <script src="assets/app.js"></script>
@@ -54,7 +74,9 @@
     const position = Store.load('position');
     const salary = Store.load('salary');
     const qdatas = Store.load('questionDatas');
+    const questions = Store.load('questions');
     const randId = Store.load('randId');
+    const mode = Store.load('mode') || 'online';
 
     renderMeta();
     renderQuestions();
@@ -62,13 +84,37 @@
       metaEl.innerHTML = `
         <p>面试岗位：<span class="code">${position || '未知岗位'}</span></p>
         <p>期望薪资：<span class="code">${salary || '未填写'}</span></p>
+        <p class="small muted">模式：<span class="code">${mode === 'offline' ? '离线' : '在线'}</span></p>
       `;
       randInput.value = randId || '';
     }
     
     function renderQuestions() {
+      if (mode !== 'offline') {
+        if (!Array.isArray(questions) || !questions.length) {
+          qsEl.innerHTML = '<div class="muted">暂无题目（未获取到接口数据）。请返回准备页重试或使用离线面试。</div>';
+          return;
+        }
+        const frag = document.createDocumentFragment();
+        questions.forEach((q, idx) => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <div class="small muted">关键词：<span class="code">${q.keyword || '-'}</span></div>
+            <h3>${q.title || q.text || q.question || q.name || '未命名题目'} <span class="small muted">（分值：<span class="code">${q.score ?? 20}</span>）</span></h3>
+            <div class="question-options">
+              <textarea class="textarea" name="q_${idx}_text" placeholder="请输入你的作答（不少于10字）" required></textarea>
+            </div>
+          `;
+          frag.appendChild(card);
+        });
+        qsEl.innerHTML = '';
+        qsEl.appendChild(frag);
+        return;
+      }
+      // 离线模式：沿用本地题库
       if (!qdatas || !qdatas.questions || !qdatas.questions.length) {
-        qsEl.innerHTML = '<div class="muted">暂无题目。</div>';
+        qsEl.innerHTML = '<div class="muted">暂无题目（未获取到离线题库）。请返回准备页重试或使用离线面试。</div>';
         return;
       }
       const frag = document.createDocumentFragment();
@@ -88,35 +134,230 @@
       qsEl.appendChild(frag);
     }
 
+    // 等候小游戏（复用准备页玩法）
+    const WG = { imagesPreloaded: false };
+    function showWaitGame() {
+      const overlay = document.getElementById('waitGameOverlay');
+      const canvas = document.getElementById('waitGameCanvas');
+      const scoreEl = document.getElementById('waitGameScore');
+      overlay.style.display = 'flex';
+      WG.running = true; WG.items = []; WG.score = 0; scoreEl.textContent = '得分：0';
+      const cssW = 340, cssH = 260;
+      canvas.style.width = cssW + 'px';
+      canvas.style.height = cssH + 'px';
+      const dpr = Math.max(1, Math.round(window.devicePixelRatio || 1));
+      canvas.width = Math.round(cssW * dpr);
+      canvas.height = Math.round(cssH * dpr);
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      const cell = 16;
+      const cols = Math.floor(cssW / cell);
+      const rows = Math.floor(cssH / cell);
+      WG.grid = { cell, cols, rows };
+      const startX = Math.floor(cols / 3);
+      const startY = Math.floor(rows / 2);
+      WG.snake = [{ x: startX, y: startY }];
+      WG.dir = { x: 1, y: 0 };
+      WG.nextDir = { x: 1, y: 0 };
+      WG.speedMs = 220;
+      WG.minSpeedMs = 180;
+      function spawnFood() {
+        let fx, fy, safe = 0;
+        do {
+          fx = Math.floor(Math.random() * cols);
+          fy = Math.floor(Math.random() * rows);
+          safe++;
+          if (safe > 100) break;
+        } while (WG.snake.some(seg => seg.x === fx && seg.y === fy));
+        return { x: fx, y: fy };
+      }
+      WG.food = spawnFood();
+      function resetSnake() {
+        WG.snake = [{ x: startX, y: startY }];
+        WG.dir = { x: 1, y: 0 };
+        WG.nextDir = { x: 1, y: 0 };
+        WG.food = spawnFood();
+        WG.speedMs = 120;
+      }
+      function step() {
+        const nd = WG.nextDir;
+        if (nd.x + WG.dir.x !== 0 || nd.y + WG.dir.y !== 0) {
+          WG.dir = nd;
+        }
+        const head = WG.snake[0];
+        let nx = head.x + WG.dir.x;
+        let ny = head.y + WG.dir.y;
+        nx = (nx + cols) % cols;
+        ny = (ny + rows) % rows;
+        if (WG.snake.some(seg => seg.x === nx && seg.y === ny)) {
+          resetSnake();
+          return;
+        }
+        WG.snake.unshift({ x: nx, y: ny });
+        if (nx === WG.food.x && ny === WG.food.y) {
+          WG.score += 1;
+          scoreEl.textContent = '得分：' + WG.score;
+          WG.food = spawnFood();
+          WG.speedMs = Math.max(WG.minSpeedMs, WG.speedMs - 7);
+        } else {
+          WG.snake.pop();
+        }
+      }
+      function draw() {
+        ctx.fillStyle = '#202225';
+        ctx.fillRect(0, 0, cssW, cssH);
+        ctx.fillStyle = '#f23d3d';
+        ctx.fillRect(WG.food.x * cell, WG.food.y * cell, cell, cell);
+        ctx.fillStyle = '#39c5bb';
+        WG.snake.forEach(seg => {
+          ctx.fillRect(seg.x * cell, seg.y * cell, cell, cell);
+        });
+      }
+      let lastTick = performance.now();
+      function tick(ts) {
+        if (!WG.running) return;
+        if (ts - lastTick >= WG.speedMs) {
+          step();
+          lastTick = ts;
+        }
+        draw();
+        WG.raf = requestAnimationFrame(tick);
+      }
+      WG.keyHandler = function (ev) {
+        const k = ev.key.toLowerCase();
+        if (k === 'arrowup' || k === 'w') { WG.nextDir = { x: 0, y: -1 }; ev.preventDefault && ev.preventDefault(); }
+        else if (k === 'arrowdown' || k === 's') { WG.nextDir = { x: 0, y: 1 }; ev.preventDefault && ev.preventDefault(); }
+        else if (k === 'arrowleft' || k === 'a') { WG.nextDir = { x: -1, y: 0 }; ev.preventDefault && ev.preventDefault(); }
+        else if (k === 'arrowright' || k === 'd') { WG.nextDir = { x: 1, y: 0 }; ev.preventDefault && ev.preventDefault(); }
+      };
+      try { document.addEventListener('keydown', WG.keyHandler, { passive: false }); } catch {}
+      lastTick = performance.now();
+      WG.raf = requestAnimationFrame(tick);
+    }
+    function hideWaitGame() {
+      const overlay = document.getElementById('waitGameOverlay');
+      overlay.style.display = 'none';
+      WG.running = false;
+      try { cancelAnimationFrame(WG.raf); } catch {}
+      try { clearInterval(WG.spawnTimer); } catch {}
+      try { if (WG.keyHandler) { document.removeEventListener('keydown', WG.keyHandler); WG.keyHandler = null; } } catch {}
+      const confirmEl = document.getElementById('waitGameConfirm');
+      if (confirmEl) { confirmEl.style.display = 'none'; confirmEl.innerHTML = ''; }
+    }
+    function showWaitEndPromptResult() {
+      const overlay = document.getElementById('waitGameOverlay');
+      const card = overlay.querySelector('.card');
+      let bar = document.getElementById('waitGameConfirm');
+      if (!bar) {
+        bar = document.createElement('div');
+        bar.id = 'waitGameConfirm';
+        bar.className = 'small';
+        bar.style.padding = '8px 12px';
+        bar.style.borderTop = '1px solid #333';
+        bar.style.background = '#151515';
+        card.appendChild(bar);
+      }
+      bar.style.display = 'block';
+      bar.innerHTML = '<div style="margin-bottom:6px;">评估完成，是否结束小游戏并查看结果？</div>' +
+        '<div class="actions" style="gap:8px; display:flex; justify-content:center;">' +
+        '<button type="button" id="wgEndBtn2" class="btn">结束并跳转</button>' +
+        '<button type="button" id="wgContinueBtn2" class="btn-ghost btn">继续玩</button>' +
+        '</div>';
+      const endBtn = document.getElementById('wgEndBtn2');
+      const contBtn = document.getElementById('wgContinueBtn2');
+      endBtn.onclick = () => {
+        hideWaitGame();
+        statusEl.textContent = '评估完成，正在跳转结果页…';
+        setTimeout(() => { window.location.href = 'result.html'; }, 300);
+      };
+      contBtn.onclick = () => {
+        statusEl.textContent = '评估完成，你可继续小游戏，随时点击「结束并跳转」。';
+      };
+    }
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (!qdatas || !qdatas.questions) return;
 
       let totalScore = 0;
       let obtainedScore = 0;
       const correctKeywords = [];
       const wrongKeywords = [];
 
-      qdatas.questions.forEach((q, idx) => {
-        totalScore += Number(q.score || 0);
-        const text = (new FormData(form)).get(`q_${idx}_text`) || '';
-        const answer = String(text).trim();
-        const max = Number(q.score || 0);
-        const s = answer.length >= 50 ? Math.round(max * 0.8) : answer.length >= 10 ? Math.round(max * 0.5) : 0;
+      if (mode === 'offline') {
+        statusEl.textContent = '正在进行离线评估（本地）…';
+      }
+
+      const questionArr = (mode === 'offline')
+        ? ((qdatas && qdatas.questions) || [])
+        : (Array.isArray(questions) ? questions : []);
+      if (!questionArr.length) return;
+
+      const formData = new FormData(form);
+      const getTitle = (q) => (q.title || q.text || q.question || q.name || '未命名题目');
+      const extractRefKeywords = (q) => {
+        const src = [q.correctAnswer, q.analysis].filter(Boolean).join(' ');
+        let tokens = [];
+        const add = (t) => { if (t && t.length >= 2) tokens.push(String(t).toLowerCase()); };
+        (src.match(/[\u4e00-\u9fa5]{2,}/g) || []).forEach(add);
+        (src.match(/[A-Za-z][A-Za-z0-9_-]{2,}/g) || []).forEach(add);
+        if (q.keyword) add(String(q.keyword));
+        tokens = Array.from(new Set(tokens)).slice(0, 12);
+        return tokens;
+      };
+      const includesToken = (answer, token) => {
+        const a = String(answer).toLowerCase();
+        return token ? a.includes(token) : false;
+      };
+
+      const wrongQuestionIds = [];
+      questionArr.forEach((q, idx) => {
+        totalScore += Number((q.score ?? 20) || 0);
+        const answer = String(formData.get(`q_${idx}_text`) || '').trim();
+        const max = Number((q.score ?? 20) || 0);
+        const refs = extractRefKeywords(q);
+        let ratio = 0;
+        if (refs.length > 0) {
+          let matched = 0;
+          refs.forEach(tok => { if (includesToken(answer, tok)) matched++; });
+          ratio = matched / refs.length;
+        } else {
+          ratio = answer.length >= 50 ? 0.8 : answer.length >= 10 ? 0.5 : 0;
+        }
+        const s = Math.round(max * ratio);
         obtainedScore += s;
-        if (q.keyword) {
-          if (s >= Math.round(max * 0.5)) correctKeywords.push(q.keyword);
-          else wrongKeywords.push(q.keyword);
+        const title = getTitle(q);
+        if (ratio < 0.5) {
+          wrongQuestionIds.push(title);
+          if (q.keyword) wrongKeywords.push(q.keyword);
+        } else {
+          if (q.keyword) correctKeywords.push(q.keyword);
         }
       });
 
-      const suggests = '建议按「概念→机制→场景」的结构组织简答，覆盖要点并结合真实案例；针对得分较低的关键词进行刻意练习与项目复盘。';
-      const recommendCourse = [
-        { name: '课程A：系统设计与答题框架', reason: '帮助你构建结构化表达能力与题目拆解套路。' },
-        { name: '课程B：并发与网络机制', reason: '强化并发、网络为重点知识的理解与应用。' }
-      ];
+      let suggests = '继续加油，巩固弱项并多做练习！';
+      let recommendCourse = [];
 
-      // 汇总并跳转结果页
+      if (mode !== 'offline') {
+        statusEl.textContent = '正在请求评估（在线）…';
+        showWaitGame();
+        try {
+          const wrongIdsParam = wrongQuestionIds.map(x => String(x).trim()).filter(Boolean).join(',');
+          const resp = await API.postJSON('result', { randId: randId || '', wrongQuestionIds: wrongIdsParam }, 180000);
+          if (resp && resp.ok && resp.json) {
+            const r = resp.json.result || resp.json.data || resp.json;
+            if (r) {
+              suggests = r.suggests || suggests;
+              recommendCourse = Array.isArray(r.recommendCourse) ? r.recommendCourse : [];
+            }
+          }
+        } catch (e) {
+          // 网络异常时保留默认建议
+        }
+      }
+
       Store.save('summary', {
         position: position || '未知岗位',
         totalScore,
@@ -127,9 +368,15 @@
         recommendCourse
       });
 
-      statusEl.textContent = '评估完成，正在跳转结果页…';
-      setTimeout(() => { window.location.href = 'result.html'; }, 500);
+      if (mode === 'offline') {
+        statusEl.textContent = '评估完成，正在跳转结果页…';
+        setTimeout(() => { window.location.href = 'result.html'; }, 500);
+      } else {
+        statusEl.textContent = '评估完成，请点击「结束并跳转」查看结果。';
+        showWaitEndPromptResult();
+      }
     });
   </script>
+  <script>AIBackdrop?.init?.({ mount: 'body', fov: 26, speed: 0.3 });</script>
 </body>
 </html>
