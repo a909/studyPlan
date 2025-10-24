@@ -141,6 +141,67 @@
       .cta-grid{ grid-template-columns:1fr; }
       .btn-lg{ width:100%; justify-content:center; }
     }
+
+    /* 顶部右上角按钮组 */
+/* 顶部右上角按钮组 */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 公共按钮小号样式 */
+.btn-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 999px;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.1);
+  text-decoration: none;
+  transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+.btn-sm svg {
+  width: 16px; height: 16px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 按钮 hover 动效 */
+.btn-sm:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+/* 主按钮（青绿） */
+.btn-test {
+  background: linear-gradient(90deg,#00C2B3,#00D6C7,#5EEAD4);
+  box-shadow: 0 6px 18px rgba(0,194,179,.25);
+}
+.btn-test:hover {
+  box-shadow: 0 10px 28px rgba(0,194,179,.35);
+  filter: brightness(1.05);
+}
+
+/* 智能解题按钮：白底浅青风格 */
+.btn-solve {
+  background: linear-gradient(180deg, #ffffff, #f9fdfd);
+  color: var(--boss);               /* 青绿文字 */
+  border: 1px solid rgba(0,194,179,.35);
+  box-shadow: 0 6px 14px rgba(0,194,179,.10);
+}
+.btn-solve svg {
+  stroke: var(--boss);              /* 图标同文字颜色 */
+}
+.btn-solve:hover {
+  background: linear-gradient(180deg, #ffffff, #ecfffd);
+  box-shadow: 0 8px 20px rgba(0,194,179,.20);
+  transform: translateY(-1px);
+}
+
   </style>
 </head>
 <body>
@@ -149,24 +210,35 @@
 
   <div class="container">
     <!-- 顶部（只保留品牌） -->
-    <div class="header">
-      <div class="brand">
-        <div class="brand-text">
-          <div class="brand-name-gradient">智面未来</div>
-          <div class="brand-sub">AI Intelligent Interview Platform</div>
-        </div>
-      </div>
+<div class="header">
+  <div class="brand">
+    <div class="brand-text">
+      <div class="brand-name-gradient">智面未来</div>
+      <div class="brand-sub">AI Intelligent Interview Platform</div>
     </div>
+  </div>
+
+<div class="header-actions">
+  <a class="btn btn-sm btn-test" href="prepare.html" aria-label="开启智能测评">
+    <!-- <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" aria-hidden="true"> -->
+      <path d="M12 5v14M5 12h14"/> <!-- ▶️ 改为“开始”样式 -->
+    </svg>
+    开启您的专属面试
+  </a>
+  <a class="btn btn-sm btn-solve" href="solve.html" aria-label="智能解题">
+    <!-- <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" aria-hidden="true"> -->
+      <circle cx="12" cy="12" r="8"/>
+      <path d="M8 12h8M12 8v8"/> <!-- ➕ 改为“思维/解题”样式 -->
+    </svg>
+    智能解题
+  </a>
+</div>
+
+</div>
 
     <!-- 01. Hero -->
     <section class="hero block">
       <h1 class="title-gradient">AI智能面试与成长学习平台</h1>
-      <!-- <p>
-        智面未来是一款专为 <strong>个人</strong> 打造的 <strong>AI+教育</strong> 智能面试学习平台。
-        系统基于你的 <strong>简历</strong>、<strong>目标薪资/级别</strong> 和 <strong>职位 JD</strong>，
-        自动生成匹配度极高的 <strong>个性化题库</strong>；并依据 <strong>理想公司</strong> 的能力模型进行
-        <strong>针对性出题</strong>，帮助你 <strong>高效提升核心技能</strong> 与 <strong>面试通过率</strong>。
-      </p> -->
       <!-- Hero 徽章：增强饱满度 -->
       <ul class="hero-badges">
         <li>
@@ -188,12 +260,6 @@
             上传简历 / 目标薪资级别 / JD，生成专属题库；评估分数 + 知识点讲解；联动历史公司题库，动态生成相似题强化训练。
           </p>
         </div>
-        <a class="btn btn-lg" href="prepare.html" aria-label="开始智能测评">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" aria-hidden="true">
-            <path d="M5 12h14"/><path d="M13 5l7 7-7 7"/>
-          </svg>
-          开始智能测评
-        </a>
       </div>
     </section>
 
@@ -270,24 +336,7 @@
 
     <hr class="sep" />
 
-    <!-- 03. 底部 CTA：唯一主按钮 -->
-    <!-- <section class="block cta">
-      <div class="cta-grid">
-        <div class="cta-copy">
-          <h3>为你的理想公司，做最有把握的一次准备</h3>
-          <p class="muted">
-            上传简历 / 目标薪资级别 / JD，生成专属题库；评估分数 + 知识点讲解；联动历史公司题库，动态生成相似题强化训练。
-          </p>
-        </div>
-        <a class="btn btn-lg" href="prepare.html" aria-label="开始智能测评">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" aria-hidden="true">
-            <path d="M5 12h14"/><path d="M13 5l7 7-7 7"/>
-          </svg>
-          开始智能测评
-        </a>
-      </div>
-    </section> -->
-  <h1 style="text-align:center;">为你的理想公司，做最有把握的一次准备</h1>
+  <h1 style="text-align:center;" class="title-gradient">为你的理想公司，做最有把握的一次准备</h1>
   </div>
       
 
