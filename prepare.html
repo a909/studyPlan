@@ -401,7 +401,7 @@
         setTimeout(() => { window.location.href = 'survey.html'; }, 300);
       };
       contBtn.onclick = () => {
-        statusEl.textContent = '已获取题目数据，你可继续小游戏，随时点击「结束并跳转」。';
+        statusEl.textContent = '已获取题目数据，还可继续小游戏，随时点击「结束并跳转」。';
       };
     }
 
@@ -597,6 +597,36 @@
         if (ok && json) {
           randId = json?.result?.randId || null;
           const rawQ = (json?.result?.questions || json?.data?.questions || json?.questions);
+          // 如果接口返回的 questions 为 null，则按正常流程使用默认题库并提示是否结束小游戏
+          if (rawQ == null || (rawQ && typeof rawQ === 'object' && rawQ.questions == null)) {
+            let fallbackArr = null;
+            let fallbackRand = 'F-' + Math.random().toString(36).slice(2, 10);
+            try {
+              const category = detectCategory(position);
+              if (window.Q && typeof window.Q.makeOfflineSet === 'function') {
+                const offline = window.Q.makeOfflineSet(category, position, jd, salary);
+                fallbackRand = offline.randId || fallbackRand;
+                const qd = offline.questionDatas || null;
+                if (qd && Array.isArray(qd.questions)) {
+                  fallbackArr = qd.questions;
+                }
+              }
+            } catch {}
+            if (!Array.isArray(fallbackArr) || !fallbackArr.length) {
+              fallbackArr = [
+                { keyword: '通用', type: 'qa', id: 'OFF-QA-001', score: 20, title: '请概述你过往项目中一次最具挑战的问题解决过程。', options: [], correctAnswer: '' },
+                { keyword: '通用', type: 'qa', id: 'OFF-QA-002', score: 20, title: '结合本岗位，说明你认为的核心技能与关键指标。', options: [], correctAnswer: '' },
+                { keyword: '通用', type: 'qa', id: 'OFF-QA-003', score: 20, title: '举例说明一次性能优化或可用性提升的实践。', options: [], correctAnswer: '' },
+                { keyword: '通用', type: 'qa', id: 'OFF-QA-004', score: 20, title: '针对岗位难点，谈谈你的应对策略与取舍。', options: [], correctAnswer: '' },
+                { keyword: '通用', type: 'qa', id: 'OFF-QA-005', score: 20, title: '谈谈你对团队协作与技术成长的理解。', options: [], correctAnswer: '' }
+              ];
+            }
+            questionsArr = fallbackArr;
+            randId = fallbackRand;
+            statusEl.textContent = '已获取题目数据，还可继续小游戏，随时点击「结束并跳转」。';
+            showWaitEndPrompt(questionsArr, randId);
+            return;
+          }
           // questions 是 JSON 格式：转为数组后直接使用
           let arr = null;
           // 优先兼容嵌套结构：result.questions.questions
@@ -638,38 +668,6 @@
               randId = fallbackRand;
               statusEl.textContent = '已获取题目数据，还可继续小游戏，随时点击「结束并跳转」。';
               showWaitEndPrompt(questionsArr, randId);
-              return;
-            }
-            // 成功解析为数组：赋值供后续提示使用
-            if (Array.isArray(arr) && arr.length) { questionsArr = arr; }
-            if (!Array.isArray(questionsArr) || !questionsArr.length) {
-              // 接口不可用或返回异常：不提示错误，按正常流程使用默认题库
-              let fallbackArr = null;
-              let fallbackRand = 'F-' + Math.random().toString(36).slice(2, 10);
-              try {
-                const category = detectCategory(position);
-                if (window.Q && typeof window.Q.makeOfflineSet === 'function') {
-                  const offline = window.Q.makeOfflineSet(category, position, jd, salary);
-                  fallbackRand = offline.randId || fallbackRand;
-                  const qd = offline.questionDatas || null;
-                  if (qd && Array.isArray(qd.questions)) {
-                    fallbackArr = qd.questions;
-                  }
-                }
-              } catch {}
-              if (!Array.isArray(fallbackArr) || !fallbackArr.length) {
-                fallbackArr = [
-                  { keyword: '通用', type: 'qa', id: 'OFF-QA-001', score: 20, title: '请概述你过往项目中一次最具挑战的问题解决过程。', options: [], correctAnswer: '' },
-                  { keyword: '通用', type: 'qa', id: 'OFF-QA-002', score: 20, title: '结合本岗位，说明你认为的核心技能与关键指标。', options: [], correctAnswer: '' },
-                  { keyword: '通用', type: 'qa', id: 'OFF-QA-003', score: 20, title: '举例说明一次性能优化或可用性提升的实践。', options: [], correctAnswer: '' },
-                  { keyword: '通用', type: 'qa', id: 'OFF-QA-004', score: 20, title: '针对岗位难点，谈谈你的应对策略与取舍。', options: [], correctAnswer: '' },
-{ keyword: '通用', type: 'qa', id: 'OFF-QA-005', score: 20, title: '谈谈你对团队协作与技术成长的理解。', options: [], correctAnswer: '' }
-                ];
-              }
-              questionsArr = fallbackArr;
-              randId = fallbackRand;
-              statusEl.textContent = '已获取题目数据，还可继续小游戏，随时点击「结束并跳转」。';
-              showWaitEndPrompt(questionsArr, randId);
               // 不 return，允许继续交互
             }
             if (!Array.isArray(questionsArr) || !questionsArr.length) {
@@ -693,7 +691,36 @@
                   { keyword: '通用', type: 'qa', id: 'OFF-QA-002', score: 20, title: '结合本岗位，说明你认为的核心技能与关键指标。', options: [], correctAnswer: '' },
                   { keyword: '通用', type: 'qa', id: 'OFF-QA-003', score: 20, title: '举例说明一次性能优化或可用性提升的实践。', options: [], correctAnswer: '' },
                   { keyword: '通用', type: 'qa', id: 'OFF-QA-004', score: 20, title: '针对岗位难点，谈谈你的应对策略与取舍。', options: [], correctAnswer: '' },
-{ keyword: '通用', type: 'qa', id: 'OFF-QA-005', score: 20, title: '谈谈你对团队协作与技术成长的理解。', options: [], correctAnswer: '' }
+                  { keyword: '通用', type: 'qa', id: 'OFF-QA-005', score: 20, title: '谈谈你对团队协作与技术成长的理解。', options: [], correctAnswer: '' }
+                ];
+              }
+              questionsArr = fallbackArr;
+              randId = fallbackRand;
+              statusEl.textContent = '已获取题目数据，还可继续小游戏，随时点击「结束并跳转」。';
+              showWaitEndPrompt(questionsArr, randId);
+            }
+            if (!Array.isArray(questionsArr) || !questionsArr.length) {
+              // 接口不可用或返回异常：不提示错误，按正常流程使用默认题库
+              let fallbackArr = null;
+              let fallbackRand = 'F-' + Math.random().toString(36).slice(2, 10);
+              try {
+                const category = detectCategory(position);
+                if (window.Q && typeof window.Q.makeOfflineSet === 'function') {
+                  const offline = window.Q.makeOfflineSet(category, position, jd, salary);
+                  fallbackRand = offline.randId || fallbackRand;
+                  const qd = offline.questionDatas || null;
+                  if (qd && Array.isArray(qd.questions)) {
+                    fallbackArr = qd.questions;
+                  }
+                }
+              } catch {}
+              if (!Array.isArray(fallbackArr) || !fallbackArr.length) {
+                fallbackArr = [
+                  { keyword: '通用', type: 'qa', id: 'OFF-QA-001', score: 20, title: '请概述你过往项目中一次最具挑战的问题解决过程。', options: [], correctAnswer: '' },
+                  { keyword: '通用', type: 'qa', id: 'OFF-QA-002', score: 20, title: '结合本岗位，说明你认为的核心技能与关键指标。', options: [], correctAnswer: '' },
+                  { keyword: '通用', type: 'qa', id: 'OFF-QA-003', score: 20, title: '举例说明一次性能优化或可用性提升的实践。', options: [], correctAnswer: '' },
+                  { keyword: '通用', type: 'qa', id: 'OFF-QA-004', score: 20, title: '针对岗位难点，谈谈你的应对策略与取舍。', options: [], correctAnswer: '' },
+                  { keyword: '通用', type: 'qa', id: 'OFF-QA-005', score: 20, title: '談談你对團隊協作與技術成長的理解。', options: [], correctAnswer: '' }
                 ];
               }
               questionsArr = fallbackArr;
@@ -724,7 +751,7 @@
             { keyword: '通用', type: 'qa', id: 'OFF-QA-002', score: 20, title: '结合本岗位，说明你认为的核心技能与关键指标。', options: [], correctAnswer: '' },
             { keyword: '通用', type: 'qa', id: 'OFF-QA-003', score: 20, title: '举例说明一次性能优化或可用性提升的实践。', options: [], correctAnswer: '' },
             { keyword: '通用', type: 'qa', id: 'OFF-QA-004', score: 20, title: '针对岗位难点，谈谈你的应对策略与取舍。', options: [], correctAnswer: '' },
-{ keyword: '通用', type: 'qa', id: 'OFF-QA-005', score: 20, title: '谈谈你对团队协作与技术成长的理解。', options: [], correctAnswer: '' }
+            { keyword: '通用', type: 'qa', id: 'OFF-QA-005', score: 20, title: '談談你对團隊協作與技術成長的理解。', options: [], correctAnswer: '' }
           ];
         }
         questionsArr = fallbackArr;
