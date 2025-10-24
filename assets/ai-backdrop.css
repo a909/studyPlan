@@ -1,0 +1,32 @@
+:root{
+  --ai-bg:#edf6ff; --ai-bg-2:#f6fbff;
+  --ai-line:#d9e7f2;
+  --ai-accent:#00c6a9; --ai-accent-2:#22d3ee; --ai-accent-3:#4f46e5;
+}
+
+/* 整个背景容器（可复用到任意页面）*/
+.ai-backdrop{
+  position:fixed; inset:0; z-index:-2; pointer-events:none;
+  background:
+    radial-gradient(1000px 700px at 15% -10%, #e2f1ff 0%, transparent 60%),
+    radial-gradient(1100px 780px at 85% 110%, #e6f4ff 0%, transparent 60%),
+    linear-gradient(#fafeff, var(--ai-bg));
+}
+.ai-backdrop > canvas{position:absolute; inset:0; width:100%; height:100%; display:block}
+
+/* 细扫描线（纯 CSS）*/
+.ai-scan{
+  position:absolute; inset:0; opacity:.5; pointer-events:none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0,144,255,.045) 0 1px,
+    transparent 1px 22px
+  );
+  animation:ai-scan-move 14s linear infinite;
+}
+@keyframes ai-scan-move{to{transform:translateY(22px)}}
+
+/* 降低动态偏好时，停动画 */
+@media (prefers-reduced-motion:reduce){
+  .ai-scan{animation:none !important}
+}

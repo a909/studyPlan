@@ -2,55 +2,289 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>智面未来</title>
+
+  <!-- 你的全局样式 & 背景（保持与前页一致） -->
   <link rel="stylesheet" href="assets/styles.css" />
-  <meta name="referrer" content="strict-origin-when-cross-origin">
-  <script>
-  var _hmt = _hmt || [];
-  (function() {
-    var hm = document.createElement("script");
-    hm.src = "https://hm.baidu.com/hm.js?fb93b240733bbdfe6a9d1a9f8589fee3";
-    var s = document.getElementsByTagName("script")[0];
-    s.parentNode.insertBefore(hm, s);
-  })();
-  </script>
+  <link rel="stylesheet" href="./assets/ai-backdrop.css" />
+  <script src="./assets/ai-backdrop.js"></script>
+
+  <meta name="referrer" content="strict-origin-when-cross-origin"/>
+
+  <style>
+    :root{
+      --boss:#00C2B3;        /* BOSS 主色 */
+      --boss-soft:#20D8CB;   /* 更清爽的青绿按钮 */
+      --ink:#0f172a;
+      --muted:#5f758e;
+      --line:#e6f2f2;
+      --card:rgba(255,255,255,.66);
+    }
+
+    body{ color:var(--ink); }
+    .container{ max-width:1100px; margin:0 auto; padding:28px 20px 64px; position:relative; z-index:1; }
+
+    /* 顶部：只保留品牌标识 */
+    .header{ display:flex; align-items:center; justify-content:space-between; padding:10px 0 6px; }
+    .brand{ display:flex; align-items:center; gap:10px; }
+    .brand-name-gradient{
+      font-weight:900; font-size:22px;
+      background:linear-gradient(90deg,#00C2B3,#00D6C7,#7CEFFF);
+      -webkit-background-clip:text; color:transparent;
+      letter-spacing:.6px; text-shadow:0 2px 8px rgba(0,194,179,.15);
+    }
+    .brand-sub{ font-size:12px; color:#5f758e; letter-spacing:.3px; margin-top:2px; }
+
+    /* 统一内容块：细边框 + 轻玻璃感 */
+    .block{
+      border:1px solid rgba(0,194,179,.14);
+      border-radius:16px;
+      background:var(--card);
+      backdrop-filter: blur(12px);
+      box-shadow:0 10px 28px rgba(0,194,179,.06);
+      padding:24px 26px;
+    }
+
+    /* ============ Hero ============ */
+    .hero{ margin-top:8px; }
+    .title-gradient{
+      position:relative; margin:0 0 8px;
+      background:linear-gradient(90deg,#073b3a,#007a73 55%,#0a6aa1);
+      -webkit-background-clip:text; color:transparent;
+      font-weight:900; letter-spacing:.2px;
+    }
+    .title-gradient::after{
+      content:""; position:absolute; left:-80px; top:-40px; width:260px; height:260px;
+      background:radial-gradient(circle, rgba(0,194,179,.22), transparent 70%);
+      filter:blur(80px); z-index:-1;
+    }
+    .hero p{ color:var(--muted); max-width:880px; margin:8px 0 12px; }
+
+    /* Hero 徽章：轻量、对齐、BOSS青绿 */
+    .hero-badges{
+      list-style:none; padding:0; margin:12px 0 0;
+      display:flex; gap:10px; flex-wrap:wrap;
+    }
+    .hero-badges li{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px; border-radius:999px;
+      border:1px solid rgba(0,194,179,.18);
+      background:rgba(255,255,255,.6);
+      color:#073b3a; font-size:13px;
+    }
+    .hero-badges svg{ width:16px; height:16px; stroke:var(--boss); }
+
+    /* 动态分隔线（细青蓝流动） */
+    .sep{
+      height:2px; border:0; margin:22px 0;
+      background:linear-gradient(90deg,#00C2B3,#20D8CB,#7AE5F1);
+      background-size:200% 100%; animation:flow 5s linear infinite;
+      border-radius:999px;
+    }
+    @keyframes flow{ 0%{background-position:0% 50%} 100%{background-position:200% 50%} }
+
+    /* ============ 系统特性：左右两大块，各含3项 ============ */
+    .features-split h2{ margin-bottom:6px; }
+    .features-split .muted{ color:var(--muted); }
+
+    .features-2cols{
+      display:grid; grid-template-columns:repeat(2,1fr);
+      gap:22px 26px; margin-top:14px;
+    }
+    .feat-card{
+      border:1px solid rgba(0,194,179,.14);
+      border-radius:14px;
+      background:rgba(255,255,255,.55);
+      backdrop-filter: blur(10px);
+      box-shadow:0 8px 22px rgba(0,194,179,.06);
+      padding:14px;
+    }
+    .fi-row{
+      display:flex; gap:12px; align-items:flex-start;
+      padding:10px 4px;
+    }
+    .fi-sep{
+      height:1px; background: linear-gradient(90deg, #e6f2f2, rgba(0,194,179,.18), #e6f2f2);
+      border:0; margin:2px 0;
+    }
+    .ico{
+      width:20px; height:20px; flex:0 0 20px; margin-top:2px;
+      stroke:var(--boss); stroke-linecap:round; stroke-linejoin:round;
+    }
+    .muted-sm{ color:#6b7a90; font-size:13px; line-height:1.5; }
+
+    /* ============ 底部 CTA ============ */
+    .cta{ margin-top:18px; position:relative; overflow:hidden; }
+    .cta::before{
+      content:""; position:absolute; inset:-40px -60px auto auto; width:340px; height:340px;
+      background:radial-gradient(circle, rgba(0,194,179,.22), transparent 70%);
+      filter:blur(80px); pointer-events:none;
+    }
+    .cta-grid{ display:grid; grid-template-columns:1fr auto; align-items:center; gap:16px; }
+    .cta h3{ margin:0 0 6px; font-size:20px; }
+    .cta .muted{ color:var(--muted); }
+
+    /* 单一主按钮（只在底部出现） */
+    .btn{
+      display:inline-flex; align-items:center; gap:8px; padding:12px 22px; border-radius:999px;
+      background:var(--boss-soft); color:#ffffff; font-weight:800; border:1px solid rgba(0,0,0,.03);
+      text-decoration:none; box-shadow:0 10px 30px rgba(0,194,179,.18);
+      transition:transform .12s ease, filter .12s ease;
+    }
+    .btn:hover{ transform:translateY(-1px); filter:brightness(1.04); }
+    .btn svg{ width:18px; height:18px; }
+    .btn-lg{ padding:14px 26px; border-radius:999px; font-size:16px; }
+
+    @media (max-width:900px){
+      .features-2cols{ grid-template-columns:1fr; }
+      .cta-grid{ grid-template-columns:1fr; }
+      .btn-lg{ width:100%; justify-content:center; }
+    }
+  </style>
 </head>
 <body>
-  <div class="watermark" aria-hidden="true"></div>
+  <!-- 背景 -->
+  <div id="backdrop"></div>
+
   <div class="container">
+    <!-- 顶部（只保留品牌） -->
     <div class="header">
-      <div class="header-title">智面未来</div>
-      <div class="actions"></div>
-    </div>
-
-    <section class="hero card">
-      <h1 class="title-gradient">AI智能面试与成长学习平台</h1>
-      <p>一款智能打造个性化面试通关方案的学习平台，帮助求职者高效准备、稳步提升，通过每一次挑战。</p>
-      <div class="actions"></div>
-    </section>
-
-    <div class="card">
-      <h2>系统特性</h2>
-      <p class="muted">以智能生成、精准评估和安全保护为核心，帮助用户高效提升面试表现，实现持续成长。</p>
-      <hr class="sep" />
-      <ul class="list-clean">
-        <li>智能生成｜精准匹配岗位与个人，自动生成面试题。</li>
-        <li>即时评估｜快速反馈表现，明确优化方向。</li>
-        <li>知识解析｜核心要点讲解，强化理解吸收。</li>
-        <li>成长记录｜可视化进步数据，呈现学习曲线。</li>
-        <li>个性提升｜针对弱项推荐重点训练。</li>
-        <li>隐私保障｜全程加密，信息安全无忧。</li>
-      </ul>
-    </div>
-
-    <div class="card">
-      <h2>智能开启</h2>
-      <p class="muted">让AI为你定制面试方案，开启高效备考之旅。</p>
-      <div class="actions" style="margin-top:8px;">
-        <a class="btn" href="prepare.html">智能面试测评</a>
+      <div class="brand">
+        <div class="brand-text">
+          <div class="brand-name-gradient">智面未来</div>
+          <div class="brand-sub">AI Intelligent Interview Platform</div>
+        </div>
       </div>
     </div>
+
+    <!-- 01. Hero -->
+    <section class="hero block">
+      <h1 class="title-gradient">AI智能面试与成长学习平台</h1>
+      <p>
+        智面未来是一款专为 <strong>个人</strong> 打造的 <strong>AI+教育</strong> 智能面试学习平台。
+        系统基于你的 <strong>简历</strong>、<strong>目标薪资/级别</strong> 和 <strong>职位 JD</strong>，
+        自动生成匹配度极高的 <strong>个性化题库</strong>；并依据 <strong>理想公司</strong> 的能力模型进行
+        <strong>针对性出题</strong>，帮助你 <strong>高效提升核心技能</strong> 与 <strong>面试通过率</strong>。
+      </p>
+
+      <!-- Hero 徽章：增强饱满度 -->
+      <ul class="hero-badges">
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/></svg>
+          个性化题库
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 8h10M7 12h6"/></svg>
+          即时评估
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 21l-4.3-4.3"/><circle cx="11" cy="11" r="7"/></svg>
+          公司定向出题
+        </li>
+      </ul>
+    </section>
+
+    <hr class="sep" />
+
+    <!-- 02. 系统特性：左右两大块，各 3 项 -->
+    <section class="block features-split">
+      <h2>系统特性</h2>
+      <p class="muted">围绕“上传 → 出题 → 评估 → 强化”的闭环，为个人打造专属成长路径。</p>
+
+      <div class="features-2cols">
+        <!-- 左块：生成 / 评估 / 知识 -->
+        <div class="feat-card">
+          <div class="fi-row">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+            <div>
+              <strong>智能生成</strong>
+              <div class="muted-sm">上传简历与 JD，一键生成专属题库。</div>
+            </div>
+          </div>
+          <div class="fi-sep"></div>
+          <div class="fi-row">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 8h10M7 12h6"/>
+            </svg>
+            <div>
+              <strong>即时评估</strong>
+              <div class="muted-sm">实时分数与短板定位，明确优化方向。</div>
+            </div>
+          </div>
+          <div class="fi-sep"></div>
+          <div class="fi-row">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M4 5a3 3 0 0 1 3-3h13v17a3 3 0 0 1-3 3H4V5z"/><path d="M7 2v18"/>
+            </svg>
+            <div>
+              <strong>知识解析</strong>
+              <div class="muted-sm">逐题讲解要点，强化理解与应用。</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右块：题库 / 个训 / 隐私 -->
+        <div class="feat-card">
+          <div class="fi-row">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M21 21l-4.3-4.3"/><circle cx="11" cy="11" r="7"/>
+            </svg>
+            <div>
+              <strong>题库联动</strong>
+              <div class="muted-sm">按公司/岗位检索，生成相似题再练。</div>
+            </div>
+          </div>
+          <div class="fi-sep"></div>
+          <div class="fi-row">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/>
+            </svg>
+            <div>
+              <strong>个性训练</strong>
+              <div class="muted-sm">围绕薄弱项，定制 7 天提升计划。</div>
+            </div>
+          </div>
+          <div class="fi-sep"></div>
+          <div class="fi-row">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M12 3l8 3v6a9 9 0 0 1-8 9 9 9 0 0 1-8-9V6l8-3z"/>
+            </svg>
+            <div>
+              <strong>隐私保障</strong>
+              <div class="muted-sm">全程加密，数据可导出或删除。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="sep" />
+
+    <!-- 03. 底部 CTA：唯一主按钮 -->
+    <section class="block cta">
+      <div class="cta-grid">
+        <div class="cta-copy">
+          <h3>为你的理想公司，做最有把握的一次准备</h3>
+          <p class="muted">
+            上传简历 / 目标薪资级别 / JD，生成专属题库；评估分数 + 知识点讲解；联动历史公司题库，动态生成相似题强化训练。
+          </p>
+        </div>
+        <a class="btn btn-lg" href="prepare.html" aria-label="开始智能测评">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" aria-hidden="true">
+            <path d="M5 12h14"/><path d="M13 5l7 7-7 7"/>
+          </svg>
+          开始智能测评
+        </a>
+      </div>
+    </section>
   </div>
+
+  <script>
+    // 背景保持与你的全站风格一致
+    AIBackdrop?.init?.({ mount: 'body', fov: 26, speed: 0.3 });
+  </script>
 </body>
 </html>
