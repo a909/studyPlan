@@ -203,6 +203,25 @@
 }
 
   </style>
+<script>
+  var _hmt = _hmt || [];
+  (function() {
+    function inject() {
+      try {
+        var hm = document.createElement("script");
+        hm.async = true; hm.defer = true;
+        hm.src = "https://hm.baidu.com/hm.js?fb93b240733bbdfe6a9d1a9f8589fee3";
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+      } catch (e) {}
+    }
+    if (window.requestIdleCallback) {
+      requestIdleCallback(inject, { timeout: 3000 });
+    } else {
+      window.addEventListener('load', function () { setTimeout(inject, 1200); }, { once: true });
+    }
+  })();
+  </script>
 </head>
 <body>
   <!-- 背景 -->
