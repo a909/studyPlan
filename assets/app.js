@@ -1,5 +1,5 @@
 // Shared utilities for the Interview Assistant
-const API_BASE = 'http://t-jxjyadmin.gaodun.com/api/v1/test';
+const API_BASE = 'https://t-jxjyadmin.gaodun.com/api/v1/test';
 
 function save(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
